@@ -664,15 +664,16 @@
 
         // 🔹 Your Firebase project config
         const firebaseConfig = {
-            apiKey: "AIzaSyDQgZ8pUDkqLDpYID09C2t2p42v2Jkcn0c",
-            authDomain: "ikamai.firebaseapp.com",
-            databaseURL: "https://ikamai-default-rtdb.firebaseio.com",
-            projectId: "ikamai",
-            storageBucket: "ikamai.firebasestorage.app",
-            messagingSenderId: "42145768648",
-            appId: "1:42145768648:web:960b24b1b416c8fb8371fd",
-            measurementId: "G-SHN3WRJVMF"
+            apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+            authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+            databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+            projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+            storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+            appId: import.meta.env.VITE_FIREBASE_APP_ID,
+            measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
         };
+
 
         // 🔹 Initialize Firebase
         const app = initializeApp(firebaseConfig);
