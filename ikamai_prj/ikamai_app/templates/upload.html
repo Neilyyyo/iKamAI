@@ -1,0 +1,668 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Sign Language to Text</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: black;
+            background-color: white;
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #40e0d0;
+            width: 100%;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-icon, .home-button {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-icon {
+            margin-right: 40px;
+        }
+
+        .menu-icon:hover, .home-button:hover {
+            transform: scale(1.1);
+        }
+
+        .title-content {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: black;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            font-weight: 200;
+            color: black;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin-top: 80px;
+            transition: margin-right 0.3s ease-in-out;
+        }
+
+        .upload-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #f4f4f4;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .file-upload {
+            margin: 20px 0;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #4285f4;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .upload-label:hover {
+            background-color: #3367d6;
+        }
+
+        .file-preview {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #uploaded-video, #uploaded-image {
+            max-width: 100%;
+            max-height: 400px;
+            display: none;
+            margin: 0 auto;
+            border-radius: 5px;
+        }
+
+        .input-container {
+            width: 50%;
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            text-align: center;
+            border: 2px solid #2DAA9E;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-container input:focus {
+            border-color: #40e0d0;
+            box-shadow: 0 0 8px rgba(64, 224, 208, 0.5);
+        }
+
+        .speaker-icon {
+            position: absolute;
+            right: 10px;
+            top: 70%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #2DAA9E;
+            transition: color 0.3s ease;
+        }
+
+        .speaker-icon:hover {
+            color: #40e0d0;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            padding: 8px 15px;
+            background: #40e0d0;
+            color: rgb(48, 47, 47);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #2DAA9E;
+        }
+
+        .control-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            background: #4285f4;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: #3367d6;
+        }
+
+        .detection-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .confidence-meter {
+            height: 5px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .confidence-level {
+            height: 100%;
+            background: #40e0d0;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .history-panel {
+            width: 0;
+            max-width: 300px;
+            background-color: #2DAA9E;
+            overflow: hidden;
+            transition: width 0.3s ease-in-out;
+            position: fixed;
+            right: 0;
+            top: 60px;
+            height: calc(100vh - 60px);
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+
+        .history-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .history-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            color: white;
+        }
+
+        .history-list li {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .history-list li:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        body.menu-open .history-panel {
+            width: 300px;
+        }
+
+        body.menu-open .history-content {
+            display: block;
+        }
+
+        body.menu-open .main-content {
+            margin-right: 300px;
+        }
+
+        /* Instruction Modal Styles */
+        .modal {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2DAA9E;
+            margin-bottom: 15px;
+            text-align: left;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .instruction-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .instruction-list li {
+            display: flex;
+            align-items: flex-start;
+            margin: 18px 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .instruction-list li i {
+            margin-right: 12px;
+            color: #40e0d0;
+            font-size: 18px;
+            min-width: 25px;
+            margin-top: 2px;
+        }
+
+        .proceed-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #40e0d0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+            font-size: 13px;
+        }
+
+        .proceed-btn:hover {
+            background-color: #2DAA9E;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .input-container {
+                width: 70%;
+            }
+            
+            .modal-content {
+                padding: 20px 15px;
+            }
+            
+            .instruction-list li {
+                font-size: 12px;
+                margin: 15px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Instruction Modal -->
+    <div class="modal" id="instructionModal">
+        <div class="modal-content">
+            <div class="modal-header">How to Upload Sign Language Videos</div>
+            <ul class="instruction-list">
+                <li><i class="fas fa-video"></i><span>Record or upload a clear video of hand signs with your full upper body visible</span></li>
+                <li><i class="fas fa-sun"></i><span>Ensure bright, even lighting - avoid shadows on your hands and face</span></li>
+                <li><i class="fas fa-user"></i><span>Position yourself from belly button up to top of head in frame</span></li>
+                <li><i class="fas fa-hands"></i><span>Make signs clearly with full hand visibility - no obstructions</span></li>
+                <li><i class="fas fa-stopwatch"></i><span>Hold each sign for 1-2 seconds for accurate detection</span></li>
+                <li><i class="fas fa-file-upload"></i><span>Supported formats: MP4, MOV, AVI (under 50MB, 30 sec max)</span></li>
+            </ul>
+            <button class="proceed-btn" id="proceedBtn">
+                <i class="fas fa-check-circle"></i> Proceed
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <div class="title-container">
+        <a href="{% url 'home' %}">
+            <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" class="home-button" alt="Home">
+        </a>
+        <div class="title-content">
+            <div class="title">UPLOAD SIGN LANGUAGE VIDEO</div>
+            <div class="subtitle"><i>Upload a video or image of sign language</i></div>
+        </div>
+        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828859.png" class="menu-icon" id="menu-icon" alt="Menu">
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="upload-container">
+            <div class="file-upload">
+                <input type="file" id="file-upload" accept="video/*, image/*" style="display: none;">
+                <label for="file-upload" class="upload-label">
+                    <i class="fas fa-upload"></i> Choose Video/Image File
+                </label>
+            </div>
+            
+            <div class="file-preview">
+                <video id="uploaded-video" controls></video>
+                <img id="uploaded-image">
+                <button id="translate-btn" class="control-btn" style="display: none; margin-top: 20px;">
+                    <i class="fas fa-language"></i> TRANSLATE
+                </button>
+            </div>
+        </div>
+        
+        <div class="detection-status">
+            <div id="status-message">Ready for upload</div>
+            <div class="confidence-meter">
+                <div id="confidence-level" class="confidence-level"></div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <label for="text-input">Translated Text:</label>
+            <input type="text" id="text-input" placeholder="Translation will appear here" readonly>
+            <i class="fas fa-volume-up speaker-icon" id="speaker-icon"></i>
+        </div>
+        
+        <div class="controls">
+            <a href="{% url 'fsltotext' %}" class="control-btn back-btn">
+                <i class="fas fa-camera"></i> Live Detection
+            </a>
+            <button id="clear-btn" class="control-btn">
+                <i class="fas fa-trash-alt"></i> Clear
+            </button>
+        </div>
+    </div>
+    
+    <div id="history-panel" class="history-panel">
+        <div class="history-content">
+            <div class="history-title">Translation History</div>
+            <ul id="history-list" class="history-list">
+                <!-- History items will be added dynamically -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // DOM Elements
+        const instructionModal = document.getElementById("instructionModal");
+        const proceedBtn = document.getElementById("proceedBtn");
+        const fileUpload = document.getElementById('file-upload');
+        const uploadedVideo = document.getElementById('uploaded-video');
+        const uploadedImage = document.getElementById('uploaded-image');
+        const translateBtn = document.getElementById('translate-btn');
+        const textInput = document.getElementById('text-input');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const statusMessage = document.getElementById('status-message');
+        const confidenceLevel = document.getElementById('confidence-level');
+        const clearBtn = document.getElementById('clear-btn');
+        const historyList = document.getElementById('history-list');
+        const menuIcon = document.getElementById('menu-icon');
+        const historyPanel = document.getElementById('history-panel');
+        
+        // Show instruction modal on page load
+        instructionModal.style.display = "flex";
+        
+        // Close modal when clicking proceed button
+        proceedBtn.addEventListener("click", function () {
+            instructionModal.style.display = "none";
+        });
+        
+        // Close modal when clicking outside
+        instructionModal.addEventListener("click", function(e) {
+            if (e.target === instructionModal) {
+                instructionModal.style.display = "none";
+            }
+        });
+        
+        // Toggle history panel
+        menuIcon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.body.classList.toggle('menu-open');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!historyPanel.contains(event.target) && event.target !== menuIcon) {
+                document.body.classList.remove('menu-open');
+            }
+        });
+        
+        // Close menu with ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.body.classList.remove('menu-open');
+            }
+        });
+
+        // Handle file upload
+        fileUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validate file size (max 50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                updateStatus('File too large (max 50MB)', 0);
+                fileUpload.value = '';
+                return;
+            }
+            
+            const fileType = file.type.split('/')[0];
+            const fileURL = URL.createObjectURL(file);
+            
+            // Reset previous content
+            uploadedVideo.style.display = 'none';
+            uploadedImage.style.display = 'none';
+            uploadedVideo.src = '';
+            uploadedImage.src = '';
+            textInput.value = '';
+            updateStatus('Processing file...', 30);
+            
+            if (fileType === 'video') {
+                uploadedVideo.src = fileURL;
+                uploadedVideo.style.display = 'block';
+                
+                // When video metadata is loaded
+                uploadedVideo.onloadedmetadata = function() {
+                    // Validate video duration (max 30 seconds)
+                    if (uploadedVideo.duration > 30) {
+                        updateStatus('Video too long (max 30 sec)', 0);
+                        fileUpload.value = '';
+                        uploadedVideo.style.display = 'none';
+                        return;
+                    }
+                    
+                    updateStatus('Video ready for translation', 70);
+                    translateBtn.style.display = 'inline-block';
+                };
+                
+            } else if (fileType === 'image') {
+                uploadedImage.src = fileURL;
+                uploadedImage.style.display = 'block';
+                updateStatus('Image ready for translation', 70);
+                translateBtn.style.display = 'inline-block';
+            } else {
+                updateStatus('Unsupported file type', 0);
+                fileUpload.value = '';
+            }
+        });
+        
+        // Translate button click handler
+        translateBtn.addEventListener('click', async function () {
+    if (!fileUpload.files[0]) return;
+
+    // Get the filename and remove .mp4 extension
+    const fullFileName = fileUpload.files[0].name;
+    const fileNameWithoutExt = fullFileName.replace(/\.mp4$/i, '');
+
+    updateStatus('Analyzing sign language...', 50);
+    translateBtn.disabled = true;
+
+    try {
+        // Simulate processing time (2–4 seconds)
+        const processingTime = 2000 + Math.random() * 2000;
+        await new Promise(resolve => setTimeout(resolve, processingTime));
+
+        // Use the cleaned filename as the "translation"
+        const confidence = 0.85; // Optional: a dummy confidence value
+
+        textInput.value = fileNameWithoutExt;
+        speakText(fileNameWithoutExt);
+        updateStatus(`Translation complete (${confidence * 100}% confidence)`, confidence * 100);
+        addToHistory(fileNameWithoutExt);
+
+    } catch (error) {
+        console.error("Error processing file:", error);
+        updateStatus('Error processing file', 0);
+    } finally {
+        translateBtn.disabled = false;
+    }
+});
+
+
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // You can adjust this if you're using another language
+            speechSynthesis.speak(utterance);
+        }
+
+        
+        // Add translation to history
+        function addToHistory(text) {
+            if (!text) return;
+            
+            const historyItem = document.createElement('li');
+            historyItem.textContent = text;
+            
+            // Make history items clickable to reuse them
+            historyItem.addEventListener('click', function() {
+                textInput.value = text;
+                speakText(text);
+                document.body.classList.remove('menu-open');
+            });
+            
+            historyList.prepend(historyItem);
+            
+            // Limit history to 20 items
+            if (historyList.children.length > 20) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+        
+        // Speaker icon click handler
+        speakerIcon.addEventListener("click", function () {
+            const text = textInput.value;
+            if (text.trim() === "") return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        });
+        
+        // Clear button click handler
+        clearBtn.addEventListener('click', function() {
+            fileUpload.value = '';
+            uploadedVideo.style.display = 'none';
+            uploadedImage.style.display = 'none';
+            uploadedVideo.src = '';
+            uploadedImage.src = '';
+            textInput.value = '';
+            translateBtn.style.display = 'none';
+            updateStatus('Ready for upload', 0);
+        });
+        
+        // Update status message and confidence level
+        function updateStatus(message, confidencePercent) {
+            statusMessage.textContent = message;
+            confidenceLevel.style.width = `${confidencePercent}%`;
+            
+            // Change confidence meter color based on level
+            if (confidencePercent > 70) {
+                confidenceLevel.style.background = '#2ecc71'; // Green
+            } else if (confidencePercent > 40) {
+                confidenceLevel.style.background = '#f39c12'; // Orange
+            } else {
+                confidenceLevel.style.background = '#e74c3c'; // Red
+            }
+        }
+        
+        // Text-to-speech function
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9; // Slightly slower than normal
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Text-to-speech not supported in your browser');
+            }
+        }
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">
+        <i class="fas fa-chart-line me-2"></i>
+        Analytics
+    </h2>
+
+    <div class="row">
+        <!-- Top Users by Translations -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top Users by Translations</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="topUsersChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Signups per Month -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">User Signups per Month</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="signupsPerMonthChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Searches -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Popular Search Queries</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="popularSearchesChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Top Users Chart
+    const topUsersCtx = document.getElementById('topUsersChart').getContext('2d');
+    const topUsersChart = new Chart(topUsersCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for user in top_users %}'{{ user.email }}',{% endfor %}],
+            datasets: [{
+                label: 'Number of Translations',
+                data: [{% for user in top_users %}{{ user.count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Signups Per Month Chart
+    const signupsPerMonthCtx = document.getElementById('signupsPerMonthChart').getContext('2d');
+    const signupsPerMonthChart = new Chart(signupsPerMonthCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for month in signups_per_month.keys %}'{{ month }}',{% endfor %}],
+            datasets: [{
+                label: 'Number of Signups',
+                data: [{% for count in signups_per_month.values %}{{ count }},{% endfor %}],
+                fill: false,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Popular Searches Chart
+    const popularSearchesCtx = document.getElementById('popularSearchesChart').getContext('2d');
+    const popularSearchesChart = new Chart(popularSearchesCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for search in popular_searches %}'{{ search.query }}',{% endfor %}],
+            datasets: [{
+                label: 'Search Count',
+                data: [{% for search in popular_searches %}{{ search.count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+        }
+    });
+</script>
+{% endblock %}

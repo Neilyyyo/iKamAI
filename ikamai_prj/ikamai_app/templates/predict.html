@@ -1,0 +1,989 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language to Text Translator</title>
+    <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #30D5C8;
+            --primary-dark: #2DAA9E;
+            --primary-light: #66D2CE;
+            --secondary: #4285f4;
+            --secondary-dark: #3367d6;
+            --danger: #ff4757;
+            --danger-dark: #ff3742;
+            --text-dark: #333333;
+            --text-light: #777777;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+            --gray: #6b7280;
+            --dark: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+             background: linear-gradient(135deg, #f4f4f4 0%, #e6f7f5 100%);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        .header {
+            padding: 1rem 2rem;
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header img {
+            height: 50px;
+            transition: var(--transition);
+        }
+
+        .header img:hover {
+            transform: scale(1.05);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-icon {
+            color: var(--primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .nav-icon:hover {
+            background-color: rgba(45, 170, 158, 0.15);
+            transform: scale(1.05);
+        }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-title p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        /* Camera and History Layout */
+        .camera-history-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Camera Section */
+        .camera-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .camera-feed {
+            width: 100%;
+            max-width: 640px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 1.5rem;
+        }
+
+        /* History Panel */
+        .history-panel {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            margin-top: 1rem;
+            list-style: none;
+        }
+
+        .history-item {
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .history-text {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Prediction Section */
+        .prediction-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .prediction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .prediction-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .prediction-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .prediction-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .accuracy-meter {
+            height: 12px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .accuracy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Controls Section */
+        .controls-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-active {
+            background-color: #28a745;
+        }
+
+        .status-inactive {
+            background-color: #dc3545;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .instruction-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .instruction-item:last-child {
+            border-bottom: none;
+        }
+
+        .instruction-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(48, 213, 200, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .camera-history-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .camera-history-container {
+                grid-template-columns: 1fr;
+            }
+
+            .camera-feed img {
+                width: 100%;
+                /* Make feed full width */
+                height: auto;
+            }
+
+            .history-panel {
+                margin-top: 1rem;
+            }
+
+            .prediction-grid,
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .container {
+            padding-top: 1.2rem;
+        }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .camera-section,
+            .history-panel,
+            .prediction-section,
+            .controls-section {
+                padding: 1.5rem;
+            }
+             .page-title h1 {
+                font-size: 1.5rem;
+            }
+             .page-title p {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-right {
+                gap: 0.75rem;
+            }
+
+            .nav-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-header h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="{% url 'home' %}">
+            <img src="{% static 'logo.png' %}" alt="KUMPAS Logo">
+        </a>
+
+        <div class="header-right">
+            <div class="nav-icon" id="help-btn">
+                <i class="fas fa-question-circle"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-title">
+            <h1>Text to Sign Language Translation</h1>
+            <p>Real-time translation from text to sign language</p>
+        </div>
+        <main class="main-content">
+            <!-- Camera and History Section -->
+            <div class="camera-history-container">
+                <!-- Camera Section -->
+                <section class="camera-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-video"></i>
+                        Camera Feed
+                    </h2>
+                    <div class="camera-feed">
+                        <img src="{% url 'v_feed' %}" width="640" height="480" id="video-feed" />
+                    </div>
+                </section>
+
+                <!-- History Panel -->
+                <section class="history-panel">
+                    <h2 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Detection History
+                    </h2>
+                    <ul class="history-list" id="history-list">
+                        <!-- History items will be added here dynamically -->
+                        <li class="history-item">
+                            <span class="history-text">No history yet</span>
+                            <span class="history-time">--:--</span>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+
+            <!-- Prediction Section -->
+            <section class="prediction-section">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Detection Results
+                </h2>
+                <div class="prediction-grid">
+                    <div class="prediction-card">
+                        <div class="prediction-label">CURRENT PREDICTION</div>
+                        <div class="prediction-value" id="current-prediction">None</div>
+                        <div class="accuracy-meter">
+                            <div id="accuracy-fill" class="accuracy-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="prediction-label">ACCURACY: <span id="current-accuracy">0%</span></div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <div class="prediction-label">DETECTION HISTORY</div>
+                        <div class="prediction-value" id="recent-count">0</div>
+                        <div class="prediction-label">PREDICTIONS TODAY</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Controls Section -->
+            <section class="controls-section">
+                <h2 class="section-title">
+                    <i class="fas fa-sliders-h"></i>
+                    Controls
+                </h2>
+                <div class="controls-grid">
+                    <button class="btn btn-primary" id="reset-btn">
+                        <i class="fas fa-redo"></i> Reset Detection
+                    </button>
+
+                    <button class="btn btn-primary" id="speak-btn">
+                        <i class="fas fa-volume-up"></i> Speak Prediction
+                    </button>
+
+                    <button class="btn btn-danger" id="camera-toggle-btn">
+                        <i class="fas fa-video"></i> Stop Camera
+                    </button>
+
+                    <a href="{% url 'fsltotext' %}" class="btn btn-secondary">
+                        <i class="fas fa-hands"></i> ASL Alphabet Translator
+                    </a>
+                </div>
+
+                <div class="status-indicator">
+                    <span class="status-dot status-active" id="status-dot"></span>
+                    <span id="camera-status">Camera status: Active</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div class="modal" id="instruction-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-info-circle"></i>
+                    How to Use
+                </h3>
+                <button class="close-modal" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="instruction-list">
+                <!-- <li class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-hand-paper"></i>
+                    </div>
+                    <div>Position your hand clearly within the camera view with good lighting conditions</div>
+                </li> -->
+                <li class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div>Ensure your entire hand is visible and not cropped by the camera frame</div>
+                </li>
+                <li class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>View the detection results and accuracy percentage in real-time</div>
+                </li>
+                <li class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>Check the history panel for previous detections and timestamps</div>
+                </li>
+                <li class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-volume-up"></i>
+                    </div>
+                    <div>Use the 'Speak' button to hear the predicted sign aloud</div>
+                </li>
+            </ul>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="start-btn">
+                    <i class="fas fa-play"></i> Get Started
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let cameraActive = true;
+        let predictionInterval;
+        let historyCount = 0;
+        let lastPrediction = "None";
+        const videoFeedElement = document.getElementById('video-feed');
+
+        // DOM Elements
+        const instructionModal = document.getElementById('instruction-modal');
+        const closeModal = document.getElementById('close-modal');
+        const startBtn = document.getElementById('start-btn');
+        const cameraToggleBtn = document.getElementById('camera-toggle-btn');
+        const statusDot = document.getElementById('status-dot');
+        const recentCount = document.getElementById('recent-count');
+
+        // Show instruction modal on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            instructionModal.style.display = 'flex';
+        });
+
+        // Modal handlers
+        closeModal.addEventListener('click', () => {
+            instructionModal.style.display = 'none';
+        });
+
+        startBtn.addEventListener('click', () => {
+            instructionModal.style.display = 'none';
+            // Start prediction updates when user begins
+            predictionInterval = setInterval(updatePrediction, 1000);
+        });
+
+        document.getElementById("help-btn").addEventListener("click", function () {
+            instructionModal.style.display = "flex";
+        });
+
+        // Track consistency
+        let stablePrediction = null;
+        let stableCount = 0;
+        const requiredStability = 3; // number of intervals (3s if interval = 1000ms)
+
+        function updatePrediction() {
+            if (cameraActive) {
+                fetch('/get_prediction/')
+                    .then(response => response.json())
+                    .then(data => {
+                        const accuracy = data.accuracy || '0%';
+                        const accuracyValue = parseFloat(accuracy) || 0;
+
+                        if (data.prediction && data.prediction !== 'None') {
+                            if (data.prediction === stablePrediction) {
+                                stableCount++;
+                            } else {
+                                stablePrediction = data.prediction;
+                                stableCount = 1;
+                            }
+
+                            // Only accept if stable for N cycles
+                            if (stableCount >= requiredStability && data.prediction !== lastPrediction) {
+                                document.getElementById('current-prediction').textContent = data.prediction;
+                                document.getElementById('current-accuracy').textContent = accuracy;
+
+                                if (!isNaN(accuracyValue)) {
+                                    document.getElementById('accuracy-fill').style.width = accuracyValue + '%';
+                                }
+
+                                addToHistory(data.prediction, accuracy);
+                                historyCount++;
+                                recentCount.textContent = historyCount;
+                                lastPrediction = data.prediction;
+                            }
+                        } else {
+                            // Reset when None
+                            stablePrediction = null;
+                            stableCount = 0;
+                            if (lastPrediction !== 'None') {
+                                document.getElementById('current-prediction').textContent = 'None';
+                                document.getElementById('current-accuracy').textContent = '0%';
+                                document.getElementById('accuracy-fill').style.width = '0%';
+                                lastPrediction = 'None';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching prediction:', error);
+                    });
+            }
+        }
+
+
+        // Function to reset prediction
+        function resetPrediction() {
+            fetch('/reset_prediction/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'reset') {
+                        document.getElementById('current-prediction').textContent = 'None';
+                        document.getElementById('current-accuracy').textContent = '0%';
+                        document.getElementById('accuracy-fill').style.width = '0%';
+                        lastPrediction = 'None';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error resetting prediction:', error);
+                });
+        }
+
+        // Function to toggle camera
+        function toggleCamera() {
+            if (cameraActive) {
+                // Stop the camera
+                cameraActive = false;
+
+                // Clear the prediction interval
+                if (predictionInterval) {
+                    clearInterval(predictionInterval);
+                }
+
+                // Stop the video feed
+                videoFeedElement.src = '';
+
+                // Update button text and icon
+                cameraToggleBtn.innerHTML = '<i class="fas fa-video-slash"></i> Start Camera';
+                cameraToggleBtn.classList.remove('btn-danger');
+                cameraToggleBtn.classList.add('btn-primary');
+
+                // Update status
+                document.getElementById('camera-status').textContent = 'Camera status: Inactive';
+                statusDot.classList.remove('status-active');
+                statusDot.classList.add('status-inactive');
+
+                // Send request to release camera
+                releaseCamera();
+            } else {
+                // Start the camera
+                cameraActive = true;
+
+                // Restart the video feed
+                videoFeedElement.src = "{% url 'v_feed' %}";
+
+                // Restart prediction interval
+                predictionInterval = setInterval(updatePrediction, 1000);
+
+                // Update button text and icon
+                cameraToggleBtn.innerHTML = '<i class="fas fa-video"></i> Stop Camera';
+                cameraToggleBtn.classList.remove('btn-primary');
+                cameraToggleBtn.classList.add('btn-danger');
+
+                // Update status
+                document.getElementById('camera-status').textContent = 'Camera status: Active';
+                statusDot.classList.remove('status-inactive');
+                statusDot.classList.add('status-active');
+            }
+        }
+
+        // Function to release camera
+        function releaseCamera() {
+            fetch('/release_camera/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            }).catch(error => {
+                console.error('Camera release request failed:', error);
+            });
+        }
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Text-to-speech function
+        function speakText() {
+            const prediction = document.getElementById('current-prediction').textContent;
+            if (prediction && prediction !== 'None') {
+                const utterance = new SpeechSynthesisUtterance(prediction);
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("No prediction to speak");
+            }
+        }
+
+        function addToHistory(prediction, accuracy) {
+            const historyList = document.getElementById('history-list');
+
+            // Remove placeholder if it exists
+            if (historyList.children.length === 1 &&
+                historyList.children[0].querySelector('.history-text').textContent === 'No history yet') {
+                historyList.innerHTML = '';
+            }
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+
+            const historyItem = document.createElement('li');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+        <span class="history-text">${prediction} (${accuracy})</span>
+        <span class="history-time">${timeString}</span>
+    `;
+
+            // Add to top of list
+            historyList.prepend(historyItem);
+
+            // Limit history to 15 items
+            if (historyList.children.length > 15) {
+                historyList.removeChild(historyList.lastChild);
+            }
+
+            // 🔥 Save to backend (only if valid)
+            if (prediction && prediction !== "None") {
+                fetch('/save_translation_words/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: prediction
+                    })
+                }).then(res => res.json())
+                    .then(data => console.log("Saved to DB:", data))
+                    .catch(err => console.error("Error saving translation:", err));
+            }
+        }
+
+
+        // Event listeners for buttons
+        document.getElementById("reset-btn").addEventListener("click", resetPrediction);
+        document.getElementById("speak-btn").addEventListener("click", speakText);
+        cameraToggleBtn.addEventListener("click", toggleCamera);
+
+        // Release camera when page is unloaded
+        // Release camera when page is unloaded (fetch-based)
+        window.addEventListener('beforeunload', function () {
+            if (cameraActive) {
+                releaseCamera();
+            }
+        });
+
+        // Extra safety: use navigator.sendBeacon to ensure release on abrupt unload
+        window.addEventListener("beforeunload", function () {
+            const data = new Blob([], { type: "application/json" });
+            navigator.sendBeacon("/release_camera/", data);
+        });
+    </script>
+</body>
+
+</html>

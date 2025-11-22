@@ -1,0 +1,1133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Create Account</title>
+    <style>
+        :root {
+            --primary: #30D5C8;
+            --primary-dark: #208b82;
+            --primary-light: #7ce6dd;
+            --secondary: #f8b237;
+            --secondary-dark: #e09a1a;
+            --text: #2d3748;
+            --text-light: #718096;
+            --light: #ffffff;
+            --dark: #1a202c;
+            --gray: #e2e8f0;
+            --gray-dark: #cbd5e0;
+            --error: #e53e3e;
+            --success: #38a169;
+            --warning: #dd6b20;
+            --radius: 12px;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --text: #edf2f7;
+            --text-light: #a0aec0;
+            --light: #1a202c;
+            --dark: #ffffff;
+            --gray: #2d3748;
+            --gray-dark: #4a5568;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(48, 213, 200, 0.1) 0%, rgba(167, 119, 227, 0.1) 100%);
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text);
+            /* background-image: url("{% static 'bg.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay; */
+        }
+
+        .particle {
+            position: absolute;
+            background-color: rgba(48, 213, 200, 0.15);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float infinite ease-in-out;
+            z-index: 0;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+        }
+
+        .utility-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .utility-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            border: none;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: var(--transition);
+        }
+
+        .utility-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            z-index: 100;
+            background: var(--light);
+            padding: 10px 15px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+            color: var(--primary);
+        }
+
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1000px;
+            height: auto;
+            min-height: 600px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow);
+            transform: translateY(0);
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .illustration-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(48, 213, 200, 0.05) 0%, rgba(167, 119, 227, 0.05) 100%);
+            position: relative;
+            overflow: hidden;
+            display: none;
+
+        }
+
+        .illustration-section::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            top: -50%;
+            left: -50%;
+            animation: pulse 8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        .illustration-section::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(167, 119, 227, 0.1);
+            bottom: -50px;
+            left: -50px;
+            z-index: 0;
+        }
+
+
+        .illustration-text {
+            color: var(--dark);
+            font-size: 1.1rem;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .illustration-text h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+
+        .illustration-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 300px;
+        }
+
+        .illustration-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .illustration-content p {
+            font-size: 1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .illustration-content img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            transition: var(--transition);
+        }
+
+        .illustration-section:hover img {
+            transform: scale(1.05);
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            margin-bottom: 30px;
+        }
+
+        .form-header h1 {
+            font-size: 2rem;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .form-header p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .progress-bar {
+            display: flex;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .progress-step {
+            flex: 1;
+            height: 6px;
+            background-color: var(--gray);
+            margin: 0 2px;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .progress-step.active {
+            background-color: var(--primary);
+        }
+
+        .progress-step:first-child {
+            margin-left: 0;
+        }
+
+        .progress-step:last-child {
+            margin-right: 0;
+        }
+
+        .form-container {
+            width: 100%;
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: var(--radius);
+            border: 2px solid var(--gray);
+            font-size: 1rem;
+            background-color: var(--light);
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(48, 213, 200, 0.2);
+        }
+
+        .form-input.error {
+            border-color: var(--error);
+        }
+
+        .form-input.success {
+            border-color: var(--success);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .input-icon:hover {
+            color: var(--primary);
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 5px;
+            border-radius: 3px;
+            background-color: var(--gray);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: var(--transition);
+            border-radius: 3px;
+        }
+
+        .password-strength-text {
+            font-size: 0.75rem;
+            margin-top: 5px;
+            text-align: right;
+            color: var(--text-light);
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(48, 213, 200, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            color: var(--primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .step-indicator {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+
+        .login-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .login-link a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .messages.fade-out {
+            opacity: 0;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success);
+            font-size: 0.9rem;
+            padding: 10px;
+            border-radius: var(--radius);
+            background-color: rgba(56, 161, 105, 0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+           .alert {
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background-color: rgba(255, 107, 107, 0.1);
+            color: var(--secondary);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .alert-success {
+            background-color: rgba(72, 187, 120, 0.1);
+            color: #2e7d32;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .alert i {
+            font-size: 20px;
+        }
+
+        .terms-container {
+            margin-top: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .terms-container input {
+            margin-top: 3px;
+        }
+
+        .terms-container label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        .terms-container a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .terms-container a:hover {
+            text-decoration: underline;
+        }
+
+        @media (min-width: 992px) {
+            .illustration-section {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles-container" id="particles"></div>
+
+    <a href="{% url 'login' %}" class="back-button">
+        <i class="fa fa-arrow-left"></i>
+
+    </a>
+
+
+    <div class="container">
+        <div class="illustration-section">
+            <div class="illustration-content">
+                <img src="{% static 'logo.png' %}" alt="iKamAI Logo">
+                <div class="illustration-text">
+                    <h2>Welcome!</h2>
+                    <p>Create account to start your journey with iKamAI's sign language translation platform</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-header">
+                <h1>Create Your Account</h1>
+                <p>Fill in your details to get started with iKamAI</p>
+            </div>
+                        {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i> 
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="progress-bar">
+                <div class="progress-step active" id="step1"></div>
+                <div class="progress-step" id="step2"></div>
+                <div class="progress-step" id="step3"></div>
+            </div>
+
+            <div class="form-container">
+                <!-- Step 1: Personal Information -->
+                <div class="form-step active" id="step-1">
+                    <form method="post" id="signup-form">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <div class="input-container">
+                                    <input type="text" name="first_name" id="first_name" class="form-input" required>
+                                    <i class="fas fa-user input-icon"></i>
+                                </div>
+                                <div class="error-message" id="first_name_error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <div class="input-container">
+                                    <input type="text" name="last_name" id="last_name" class="form-input" required>
+                                </div>
+                                <div class="error-message" id="last_name_error"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-container">
+                                <input type="email" name="email" id="email" class="form-input" required>
+                                <i class="fas fa-envelope input-icon"></i>
+                            </div>
+                            <div class="error-message" id="email_error"></div>
+                        </div>
+
+                        <div class="form-footer">
+                            <div class="step-indicator">Step 1 of 3</div>
+                            <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                                Next <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                </div>
+
+                <!-- Step 2: Account Details -->
+                <div class="form-step" id="step-2">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-container">
+                            <input type="text" name="username" id="username" class="form-input" required>
+                            <i class="fas fa-at input-icon"></i>
+                        </div>
+                        <div class="error-message" id="username_error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-container">
+                            <input type="password" name="password" id="password" class="form-input" required>
+                            <i class="fas fa-eye input-icon" id="togglePassword"
+                                onclick="togglePasswordVisibility('password', 'togglePassword')"></i>
+                        </div>
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="password-strength-bar"></div>
+                        </div>
+                        <div class="password-strength-text" id="password-strength-text">Password strength</div>
+                        <div class="error-message" id="password_error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        <div class="input-container">
+                            <input type="password" name="confirm_password" id="confirm_password" class="form-input"
+                                required>
+                            <i class="fas fa-eye input-icon" id="toggleConfirmPassword"
+                                onclick="togglePasswordVisibility('confirm_password', 'toggleConfirmPassword')"></i>
+                        </div>
+                        <div class="error-message" id="confirm_password_error"></div>
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(1)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep(3)">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Terms and Final Step -->
+                <div class="form-step" id="step-3">
+                    <div class="terms-container">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy
+                                Policy</a>. I understand that my personal data will be processed in accordance with
+                            iKamAI's privacy policy.</label>
+                    </div>
+
+                    <!-- <div class="terms-container">
+                        <input type="checkbox" id="newsletter" name="newsletter">
+                        <label for="newsletter">Send me product updates, tips, and special offers via email. I can
+                            unsubscribe at any time.</label>
+                    </div> -->
+
+                    <div class="form-footer">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Create Account <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="login-link">
+                Already have an account? <a href="{% url 'login' %}">Log in here</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 15;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                const size = Math.random() * 8 + 4;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+
+                const duration = Math.random() * 15 + 10;
+                const delay = Math.random() * 5;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+
+                // Random shape (circle or subtle blob)
+                if (Math.random() > 0.5) {
+                    particle.style.borderRadius = '42% 58% 70% 30% / 45% 45% 55% 55%';
+                }
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function showMessage(type, message) {
+            const existingMessages = document.querySelector('.messages');
+            if (existingMessages) {
+                existingMessages.remove();
+            }
+            
+            const messagesDiv = document.createElement('div');
+            messagesDiv.className = 'messages';
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+            
+            messagesDiv.appendChild(alertDiv);
+            
+            const form = document.getElementById('loginForm');
+            form.parentNode.insertBefore(messagesDiv, form);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messagesDiv.classList.add('fade-out');
+                setTimeout(() => messagesDiv.remove(), 500);
+            }, 5000);
+        }
+
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId, toggleIconId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(toggleIconId);
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleIcon.classList.remove("fa-eye");
+                toggleIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                toggleIcon.classList.remove("fa-eye-slash");
+                toggleIcon.classList.add("fa-eye");
+            }
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.querySelector('#darkModeToggle i');
+
+            if (icon.classList.contains('fa-moon')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+
+            // Save preference to localStorage
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        // Check password strength
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            const bar = document.getElementById('password-strength-bar');
+            const text = document.getElementById('password-strength-text');
+
+            // If password is empty
+            if (password.length === 0) {
+                bar.style.width = '0%';
+                bar.style.backgroundColor = '#e2e8f0';
+                text.textContent = 'Password strength';
+                text.style.color = '#718096';
+                return;
+            }
+
+            // Check length
+            if (password.length >= 8) strength += 20;
+
+            // Check for lowercase
+            if (password.match(/[a-z]/)) strength += 20;
+
+            // Check for uppercase
+            if (password.match(/[A-Z]/)) strength += 20;
+
+            // Check for numbers
+            if (password.match(/[0-9]/)) strength += 20;
+
+            // Check for special characters
+            if (password.match(/[^a-zA-Z0-9]/)) strength += 20;
+
+            // Update UI
+            bar.style.width = `${strength}%`;
+
+            if (strength < 40) {
+                bar.style.backgroundColor = '#e53e3e';
+                text.textContent = 'Weak';
+                text.style.color = '#e53e3e';
+            } else if (strength < 80) {
+                bar.style.backgroundColor = '#dd6b20';
+                text.textContent = 'Medium';
+                text.style.color = '#dd6b20';
+            } else {
+                bar.style.backgroundColor = '#38a169';
+                text.textContent = 'Strong';
+                text.style.color = '#38a169';
+            }
+        }
+
+        // Form navigation
+        function goToStep(stepNumber) {
+            // Hide all steps
+            document.querySelectorAll('.form-step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById(`step-${stepNumber}`).classList.add('active');
+
+            // Update progress bar
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                if (index < stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+
+        function nextStep(next) {
+            // Validate current step before proceeding
+            const currentStep = document.querySelector('.form-step.active').id.split('-')[1];
+
+            if (currentStep == 1) {
+                if (!validateStep1()) return;
+            } else if (currentStep == 2) {
+                if (!validateStep2()) return;
+            }
+
+            goToStep(next);
+        }
+
+        function prevStep(prev) {
+            goToStep(prev);
+        }
+
+        // Form validation
+        function validateStep1() {
+            let isValid = true;
+
+            // Validate first name
+            const firstName = document.getElementById('first_name');
+            const firstNameError = document.getElementById('first_name_error');
+
+            if (!firstName.value.trim()) {
+                firstNameError.textContent = 'First name is required';
+                firstNameError.style.display = 'block';
+                firstName.classList.add('error');
+                isValid = false;
+            } else {
+                firstNameError.style.display = 'none';
+                firstName.classList.remove('error');
+            }
+
+            // Validate last name
+            const lastName = document.getElementById('last_name');
+            const lastNameError = document.getElementById('last_name_error');
+
+            if (!lastName.value.trim()) {
+                lastNameError.textContent = 'Last name is required';
+                lastNameError.style.display = 'block';
+                lastName.classList.add('error');
+                isValid = false;
+            } else {
+                lastNameError.style.display = 'none';
+                lastName.classList.remove('error');
+            }
+
+            // Validate email
+            const email = document.getElementById('email');
+            const emailError = document.getElementById('email_error');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!email.value.trim()) {
+                emailError.textContent = 'Email is required';
+                emailError.style.display = 'block';
+                email.classList.add('error');
+                isValid = false;
+            } else if (!emailRegex.test(email.value)) {
+                emailError.textContent = 'Please enter a valid email address';
+                emailError.style.display = 'block';
+                email.classList.add('error');
+                isValid = false;
+            } else {
+                emailError.style.display = 'none';
+                email.classList.remove('error');
+            }
+
+            return isValid;
+        }
+
+        function validateStep2() {
+            let isValid = true;
+
+            // Validate username
+            const username = document.getElementById('username');
+            const usernameError = document.getElementById('username_error');
+
+            if (!username.value.trim()) {
+                usernameError.textContent = 'Username is required';
+                usernameError.style.display = 'block';
+                username.classList.add('error');
+                isValid = false;
+            } else if (username.value.length < 3) {
+                usernameError.textContent = 'Username must be at least 3 characters';
+                usernameError.style.display = 'block';
+                username.classList.add('error');
+                isValid = false;
+            } else {
+                usernameError.style.display = 'none';
+                username.classList.remove('error');
+            }
+
+            // Validate password
+            const password = document.getElementById('password');
+            const passwordError = document.getElementById('password_error');
+
+            if (!password.value) {
+                passwordError.textContent = 'Password is required';
+                passwordError.style.display = 'block';
+                password.classList.add('error');
+                isValid = false;
+            } else if (password.value.length < 8) {
+                passwordError.textContent = 'Password must be at least 8 characters';
+                passwordError.style.display = 'block';
+                password.classList.add('error');
+                isValid = false;
+            } else {
+                passwordError.style.display = 'none';
+                password.classList.remove('error');
+            }
+
+            // Validate confirm password
+            const confirmPassword = document.getElementById('confirm_password');
+            const confirmPasswordError = document.getElementById('confirm_password_error');
+
+            if (!confirmPassword.value) {
+                confirmPasswordError.textContent = 'Please confirm your password';
+                confirmPasswordError.style.display = 'block';
+                confirmPassword.classList.add('error');
+                isValid = false;
+            } else if (confirmPassword.value !== password.value) {
+                confirmPasswordError.textContent = 'Passwords do not match';
+                confirmPasswordError.style.display = 'block';
+                confirmPassword.classList.add('error');
+                isValid = false;
+            } else {
+                confirmPasswordError.style.display = 'none';
+                confirmPassword.classList.remove('error');
+            }
+
+            return isValid;
+        }
+
+        function validateForm() {
+            // Validate all steps
+            if (!validateStep1() || !validateStep2()) {
+                // Go to the first step with error
+                if (!validateStep1()) {
+                    goToStep(1);
+                } else if (!validateStep2()) {
+                    goToStep(2);
+                }
+                return false;
+            }
+
+            // Check if terms are accepted
+            const terms = document.getElementById('terms');
+            if (!terms.checked) {
+                goToStep(3);
+                alert('Please accept the Terms of Service to continue');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            createParticles();
+
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                const icon = document.querySelector('#darkModeToggle i');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+
+            // Password strength indicator
+            document.getElementById('password').addEventListener('input', function () {
+                checkPasswordStrength(this.value);
+            });
+
+            // Form submission
+            document.getElementById('signup-form').addEventListener('submit', function (e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                }
+            });
+
+            // Real-time validation for step 1 fields
+            document.getElementById('first_name').addEventListener('blur', function () {
+                validateStep1();
+            });
+
+            document.getElementById('last_name').addEventListener('blur', function () {
+                validateStep1();
+            });
+
+            document.getElementById('email').addEventListener('blur', function () {
+                validateStep1();
+            });
+
+            // Real-time validation for step 2 fields
+            document.getElementById('username').addEventListener('blur', function () {
+                validateStep2();
+            });
+
+            document.getElementById('confirm_password').addEventListener('input', function () {
+                const password = document.getElementById('password').value;
+                const confirmPassword = this.value;
+                const errorElement = document.getElementById('confirm_password_error');
+
+                if (confirmPassword && password !== confirmPassword) {
+                    errorElement.textContent = 'Passwords do not match';
+                    errorElement.style.display = 'block';
+                    this.classList.add('error');
+                } else {
+                    errorElement.style.display = 'none';
+                    this.classList.remove('error');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

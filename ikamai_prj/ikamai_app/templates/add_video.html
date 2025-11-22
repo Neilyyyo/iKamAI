@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-film me-2"></i> Add Sign Language Video
+        </h2>
+    </div>
+            <a href="{% url 'video-management' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Back to Videos
+        </a>
+    
+    <!-- Success/Error Message Alerts -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-2" style="border-color: turquoise;">
+                <div class="card-header bg-white fw-bold">
+                    <i class="fas fa-upload text-info me-2"></i> Upload New Video
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate id="videoForm">
+                        {% csrf_token %}
+
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Video Title</label>
+                            <input type="text" id="title" name="title" class="form-control" placeholder="Enter video title" required>
+                            <div class="invalid-feedback">Please enter a video title.</div>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="mb-3">
+                            <label for="video" class="form-label">Select Video</label>
+                            <input type="file" id="video" name="video" class="form-control" accept="video/mp4" required>
+                            <div class="form-text">Only MP4 format is supported.</div>
+                            <div class="invalid-feedback">Please select a video file.</div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-info text-white fw-semibold">
+                                <i class="fas fa-cloud-upload-alt me-2"></i> Upload Video
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Bootstrap validation
+    (function () {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+    
+    // Clear form if page is loaded without POST data (after successful submission)
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('videoForm');
+        
+        // Check if there's a success message (indicating a recent successful upload)
+        const successAlerts = document.querySelectorAll('.alert-success');
+        if (successAlerts.length > 0) {
+            form.reset();
+            form.classList.remove('was-validated');
+        }
+        
+        // Auto-dismiss alerts after 5 seconds
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+</script>
+{% endblock %}

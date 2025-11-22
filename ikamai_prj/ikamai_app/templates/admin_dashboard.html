@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">
+        <i class="fas fa-tachometer-alt me-2"></i>
+        Admin Dashboard
+    </h2>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-md border-2" style="border-color: #4e73df;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 text-primary">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Total Users</h6>
+                        <h3 class="fw-bold mb-0">{{ total_users }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-md border-2" style="border-color: #1cc88a;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 text-success">
+                        <i class="fas fa-video fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Total Videos</h6>
+                        <h3 class="fw-bold mb-0">{{ total_videos }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-md border-2" style="border-color: turquoise;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 text-info">
+                        <i class="fas fa-sign-language fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Sign to Text</h6>
+                        <h3 class="fw-bold mb-0">{{ total_translations }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-md border-2" style="border-color: #f6c23e;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 text-warning">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Text to Sign</h6>
+                        <h3 class="fw-bold mb-0">{{ total_searches }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Users -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Users</h6>
+                    <a href="{% url 'user-list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-user-circle text-secondary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">{{ user.email|default:"Unknown" }}</h6>
+                                <small class="text-muted">Joined: {{ user.created_at }}</small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted p-3 mb-0">No users found.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Videos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-success">Recent Videos</h6>
+                    <a href="{% url 'video-management' %}" class="btn btn-sm btn-success">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for video in recent_videos %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1">{{ video.title|default:"Untitled" }}</h6>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted p-3 mb-0">No videos found.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Activities -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-info">Recent Activities</h6>
+                    <a href="{% url 'history_page' %}" class="btn btn-sm btn-info">View Full History</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>User</th>
+                                    <th>Content</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activities %}
+                                <tr>
+                                    <td>
+                                        <span class="badge {% if activity.type == 'Translation' %}bg-primary{% else %}bg-warning{% endif %}">
+                                            {% if activity.type == 'Translation' %}
+                                                Sign Language to Text
+                                            {% else %}
+                                                Text to Sign Language
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ activity.email }}</td>
+                                    <td>
+                                        {% if activity.type == 'Translation' %}
+                                            {{ activity.text|truncatewords:10 }}
+                                        {% else %}
+                                            {{ activity.query|truncatewords:10 }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ activity.timestamp }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">No recent activities</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

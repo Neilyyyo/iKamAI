@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-users me-2"></i> User Management
+        </h2>
+        <div class="d-flex gap-2 flex-wrap">
+            <!-- Export / Print Buttons -->
+            <button onclick="printTable()" class="btn btn-secondary">
+                <i class="fas fa-print me-1"></i> Print
+            </button>
+            <button onclick="downloadCSV()" class="btn btn-success">
+                <i class="fas fa-file-csv me-1"></i> CSV
+            </button>
+            <button onclick="downloadPDF()" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-1"></i> PDF
+            </button>
+        </div>
+        
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="users" class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>Date Created</th>
+                            <!-- <th>Actions</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr data-uid="{{ user.uid }}">
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>
+                                {% if user.date_created %}
+                                    {{ user.date_created|date:"Y-m-d H:i:s" }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <!-- <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteUserModal" 
+                                            data-uid="{{ user.uid }}" 
+                                            data-username="{{ user.username }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td> -->
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                <i class="fas fa-user-slash"></i> No users found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+
+
+
+<style>
+@media print {
+    .btn, .navbar, .modal, .pagination {
+        display: none !important;
+    }
+    table th:last-child,
+    table td:last-child {
+        display: none !important; /* hide Actions column */
+    }
+}
+</style>
+ <script>
+
+// Export helpers
+function getCurrentDate() {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+}
+
+function printTable() {
+    document.title = `users_${getCurrentDate()}`;
+    window.print();
+    document.title = "Firebase User Management";
+}
+
+function downloadCSV() {
+    let rows = [];
+    document.querySelectorAll("table tr").forEach(tr => {
+        let cols = [...tr.querySelectorAll("th, td")];
+        cols = cols.slice(0, -1); // skip last col (Actions)
+        rows.push(cols.map(td => `"${td.innerText.trim()}"`).join(","));
+    });
+    let csvContent = rows.join("\n");
+    let blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `users_${getCurrentDate()}.csv`;
+    link.click();
+}
+
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "pt", "a4");
+    let rows = [];
+    let headers = [];
+
+    document.querySelectorAll("table thead tr th").forEach((th, index, arr) => {
+        if (index < arr.length - 1) headers.push(th.innerText.trim()); // skip last col
+    });
+    rows.push(headers);
+
+    document.querySelectorAll("table tbody tr").forEach(tr => {
+        let row = [];
+        let cols = [...tr.querySelectorAll("td")];
+        cols.slice(0, -1).forEach(td => row.push(td.innerText.trim())); // skip Actions
+        if (row.length) rows.push(row);
+    });
+
+    let y = 40;
+    rows.forEach((row) => {
+        let x = 40;
+        row.forEach(text => {
+            doc.text(text, x, y);
+            x += 120;
+        });
+        y += 20;
+    });
+
+    doc.save(`users_${getCurrentDate()}.pdf`);
+}
+</script>
+{% endblock %}

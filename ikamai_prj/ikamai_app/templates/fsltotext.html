@@ -1,0 +1,969 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language to Text Translator</title>
+    <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #30D5C8;
+            --primary-dark: #2DAA9E;
+            --primary-light: #66D2CE;
+            --secondary: #FF6B6B;
+            --dark: #2D3748;
+            --light: #F8F9FA;
+            --gray: #A0AEC0;
+            --success: #48BB78;
+            --warning: #ECC94B;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f4f4f4 0%, #e6f7f5 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        .header {
+            padding: 1rem 2rem;
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header img {
+            height: 50px;
+            transition: var(--transition);
+        }
+
+        .header img:hover {
+            transform: scale(1.05);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--light);
+            color: var(--dark);
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .icon-button:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-icon {
+            color: var(--primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .nav-icon:hover {
+            background-color: rgba(45, 170, 158, 0.15);
+            transform: scale(1.05);
+        }
+
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .back-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .back-nav:hover {
+            color: var(--primary);
+            background: rgba(48, 213, 200, 0.1);
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-title p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* Card Layout */
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            color: white;
+        }
+
+        .card-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-content {
+            padding: 2rem;
+        }
+
+        /* Camera Feed */
+        .camera-container {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f1f5f9;
+            aspect-ratio: 4/3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #video-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .camera-status {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-indicator.inactive {
+            background: var(--secondary);
+        }
+
+        /* Input Controls */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: #f8fafc;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(48, 213, 200, 0.2);
+            background-color: white;
+        }
+
+        .form-input:read-only {
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        /* Button Styles */
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #e53e3e;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn-warning:hover {
+            background-color: #d69e2e;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Suggestions */
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .suggestion-btn {
+            padding: 0.75rem;
+            background: rgba(48, 213, 200, 0.1);
+            border: 1px solid var(--primary-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .suggestion-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* History Panel */
+        .history-panel {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            margin-top: 1rem;
+        }
+
+        .history-item {
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .history-text {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .instruction-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .instruction-list li {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .instruction-list li:last-child {
+            border-bottom: none;
+        }
+
+        .instruction-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(48, 213, 200, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header img {
+                height: 40px;
+            }
+
+            .container {
+                padding: 0 1rem;
+                margin: 1.5rem auto;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-header h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+
+<body>
+    <div class="header">
+        <a href="{% url 'home' %}">
+            <img src="{% static 'logo.png' %}" alt="KUMPAS Logo">
+        </a>
+        <div class="header-right">
+            <div class="nav-icon" id="help-btn">
+                <i class="fas fa-question-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Sign Language to Text Translation</h1>
+            <p>Real-time translation from sign language to text</p>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-video"></i> Live Camera Feed</h2>
+                </div>
+                <div class="card-content">
+                    <div class="camera-container">
+                        <img src="{% url 'video_feed' %}" id="video-feed" />
+                        <div class="camera-status">
+                            <div class="status-indicator" id="status-indicator"></div>
+                            <span id="status-text">Camera Active</span>
+                        </div>
+                    </div>
+
+                    <div class="input-grid">
+                        <div class="form-group">
+                            <label for="char-output"><i class="fas fa-font"></i> Character</label>
+                            <input type="text" id="char-output" class="form-input" placeholder="Current character"
+                                readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="sentence-output"><i class="fas fa-text-height"></i> Sentence</label>
+                            <input type="text" id="sentence-output" class="form-input" placeholder="Full sentence"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-lightbulb"></i> Suggestions</label>
+                        <div class="suggestions-grid" id="suggestions">
+                            <div class="suggestion-btn" onclick="applySuggestion(0)">Suggestion 1</div>
+                            <div class="suggestion-btn" onclick="applySuggestion(1)">Suggestion 2</div>
+                            <div class="suggestion-btn" onclick="applySuggestion(2)">Suggestion 3</div>
+                            <div class="suggestion-btn" onclick="applySuggestion(3)">Suggestion 4</div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" id="clear-btn">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                        <button class="btn btn-success" id="speak-btn">
+                            <i class="fas fa-volume-up"></i> Speak
+                        </button>
+                        <button class="btn btn-danger" id="stop-camera-btn">
+                            <i class="fas fa-video-slash"></i> Stop Camera
+                        </button>
+                        <a href="{% url 'detection_page' %}" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Translate ASL Words
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card history-panel">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Translation History</h2>
+                </div>
+                <div class="card-content">
+                    <div class="history-list" id="history-list">
+                        <!-- History items will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div class="modal" id="instructionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-info-circle"></i> How to Use
+            </div>
+            <ul class="instruction-list">
+                <li>
+                    <div class="instruction-icon">
+                        <i class="fas fa-hand-pointer"></i>
+                    </div>
+                    <div>Place your hand in front of the camera</div>
+                </li>
+                <li>
+                    <div class="instruction-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div>Ensure proper lighting for better accuracy</div>
+                </li>
+                <li>
+                    <div class="instruction-icon">
+                        <i class="fas fa-text-height"></i>
+                    </div>
+                    <div>View the translated text in the input boxes</div>
+                </li>
+                <li>
+                    <div class="instruction-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>Check translation history in the right panel</div>
+                </li>
+            </ul>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="proceedBtn">
+                    <i class="fas fa-play"></i> Get Started
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // Global variable to track camera state
+        let cameraActive = true;
+        let predictionInterval;
+
+        // Function to release camera
+        function releaseCamera() {
+            if (cameraActive) {
+                cameraActive = false;
+
+                // Clear the prediction interval
+                if (predictionInterval) {
+                    clearInterval(predictionInterval);
+                }
+
+                // Stop the video feed
+                const videoFeed = document.getElementById('video-feed');
+                videoFeed.src = ''; // Clear the src to stop the stream
+
+                // Send request to backend to release camera
+                fetch("{% url 'release_camera' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(error => {
+                    console.log('Camera release request failed:', error);
+                });
+
+                // Update UI
+                document.getElementById('stop-camera-btn').innerHTML = '<i class="fas fa-video"></i> Start Camera';
+                document.getElementById('stop-camera-btn').className = 'btn btn-success';
+                document.getElementById('status-text').textContent = 'Camera Inactive';
+                document.getElementById('status-indicator').className = 'status-indicator inactive';
+            } else {
+                // Restart the camera
+                cameraActive = true;
+                const videoFeed = document.getElementById('video-feed');
+                videoFeed.src = "{% url 'video_feed' %}";
+
+                // Restart prediction interval
+                startPredictionInterval();
+
+                // Update UI
+                document.getElementById('stop-camera-btn').innerHTML = '<i class="fas fa-video-slash"></i> Stop Camera';
+                document.getElementById('stop-camera-btn').className = 'btn btn-danger';
+                document.getElementById('status-text').textContent = 'Camera Active';
+                document.getElementById('status-indicator').className = 'status-indicator';
+            }
+        }
+
+        // Function to start prediction interval
+        function startPredictionInterval() {
+            predictionInterval = setInterval(() => {
+                if (cameraActive) {
+                    fetch("{% url 'predict' %}")
+                        .then(res => res.json())
+                        .then(data => {
+                            document.getElementById('char-output').value = data.character;
+                            document.getElementById('sentence-output').value = data.sentence;
+                            const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
+                            suggestionButtons.forEach((btn, i) => {
+                                btn.textContent = data.suggestions[i] || "—";
+                            });
+                        });
+                }
+            }, 1500);
+        }
+
+        function applySuggestion(index) {
+            const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
+            const word = suggestionButtons[index].textContent;
+
+            if (word && word !== "—") {
+                let sentence = document.getElementById('sentence-output').value.trim();
+                const lastSpace = sentence.lastIndexOf(" ");
+
+                if (lastSpace >= 0) {
+                    sentence = sentence.substring(0, lastSpace + 1) + word.toUpperCase();
+                } else {
+                    sentence = word.toUpperCase();
+                }
+
+                // Update textbox
+                document.getElementById('sentence-output').value = sentence;
+
+                // Send to backend
+                fetch("{% url 'apply_suggestion' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ sentence: sentence })
+                });
+            }
+        }
+
+        // Clear function
+        document.getElementById("clear-btn").addEventListener("click", function () {
+            fetch("{% url 'predict' %}?clear=true")
+                .then(() => {
+                    document.getElementById("sentence-output").value = "";
+                    document.getElementById("char-output").value = "";
+
+                    // Reset suggestions
+                    const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
+                    suggestionButtons.forEach(btn => btn.textContent = "—");
+                });
+        });
+
+        // Text-to-speech function
+        document.getElementById("speak-btn").addEventListener("click", function () {
+            let textToSpeak = document.getElementById("sentence-output").value;
+            if (textToSpeak.trim() !== "") {
+                let utterance = new SpeechSynthesisUtterance(textToSpeak);
+                window.speechSynthesis.speak(utterance);
+
+                // Save to history when speaking
+                saveToHistory(textToSpeak);
+            }
+        });
+
+        // Add event listener for stop camera button
+        document.getElementById("stop-camera-btn").addEventListener("click", releaseCamera);
+
+        // Add to history function
+        function addToHistory(text, timestamp) {
+            const historyList = document.getElementById('history-list');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+
+            historyItem.innerHTML = `
+                <div class="history-text">${text || "(No text)"}</div>
+                <div class="history-time">${timestamp || new Date().toLocaleTimeString()}</div>
+            `;
+
+            historyList.prepend(historyItem); // Add to top of list
+        }
+
+        // Save to history function
+        function saveToHistory(text) {
+            if (text.trim() === "") return;
+
+            const timestamp = new Date().toLocaleString();
+            addToHistory(text, timestamp);
+
+            // Send to backend
+            fetch("/save_sentence/", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie('csrftoken'),
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "sentencetext=" + encodeURIComponent(text)
+            })
+                .then(response => response.json())
+                .then(data => console.log("Saved to history:", data))
+                .catch(err => console.error("Error saving history:", err));
+        }
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Release camera when page is unloaded
+        window.addEventListener('beforeunload', function (e) {
+            if (cameraActive) {
+                // Release camera resources
+                fetch("{% url 'release_camera' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    },
+                    keepalive: true
+                }).catch(error => {
+                    console.log('Camera release request failed:', error);
+                });
+            }
+        });
+
+        // Handle browser back button
+        window.addEventListener('popstate', function (event) {
+            if (cameraActive) {
+                releaseCamera();
+            }
+        });
+
+        // Load history on page load
+        function loadHistory() {
+            fetch("/get_sentencehistory/")
+                .then(response => response.json())
+                .then(data => {
+                    const historyList = document.getElementById("history-list");
+                    historyList.innerHTML = "";
+
+                    (Array.isArray(data) ? data : data.history || []).forEach(item => {
+                        addToHistory(item.text, item.timestamp);
+                    });
+                })
+                .catch(err => console.error("Error loading history:", err));
+        }
+
+        // Initialize page
+        document.addEventListener("DOMContentLoaded", function () {
+            // Show instruction modal
+            const instructionModal = document.getElementById("instructionModal");
+            instructionModal.style.display = "flex";
+
+            const proceedBtn = document.getElementById("proceedBtn");
+            proceedBtn.addEventListener("click", function () {
+                instructionModal.style.display = "none";
+            });
+
+            // Add event listener for help button
+            document.getElementById("help-btn").addEventListener("click", function () {
+                instructionModal.style.display = "flex";
+            });
+
+            // Start prediction interval
+            startPredictionInterval();
+
+            // Load user history
+            loadHistory();
+        });
+
+        window.addEventListener("beforeunload", function () {
+            const data = new Blob([], { type: "application/json" });
+            navigator.sendBeacon("/release_camera/", data);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,777 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Sign Language to Text</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: black;
+            background-color: white;
+        }
+
+        /* Top Navigation */
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #40e0d0;
+            width: 100%;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-icon, .home-button {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-icon{
+            margin-right: 40px;
+        }
+
+        .menu-icon:hover, .home-button:hover {
+            transform: scale(1.1);
+        }
+
+        .title-content {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: black;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            font-weight: 200;
+            color: black;
+        }
+
+        /* Layout Containers */
+        .container {
+            display: flex;
+            width: 100%;
+            margin-top: 60px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin-top: 80px;
+            transition: width 0.3s ease-in-out;
+        }
+
+        .camera-container {
+            display: flex;
+            width: 100%;
+            padding-top: 50px;
+            padding-bottom: 20px;
+            border-radius: 10px;
+            justify-content: center;
+            background-color: #f4f4f4;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        video {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 5px;
+        }
+
+        .input-container {
+            width: 50%;
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            text-align: center;
+            border: 2px solid #2DAA9E;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-container input:focus {
+            border-color: #40e0d0;
+            box-shadow: 0 0 8px rgba(64, 224, 208, 0.5);
+        }
+
+        .speaker-icon {
+            position: absolute;
+            right: 10px;
+            top: 70%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #2DAA9E;
+            transition: color 0.3s ease;
+        }
+
+        .speaker-icon:hover {
+            color: #40e0d0;
+        }
+
+        /* History Panel */
+        .history-panel {
+            width: 0;
+            max-width: 300px;
+            background-color: #2DAA9E;
+            overflow: hidden;
+            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+            padding: 0;
+            position: fixed;
+            right: 0;
+            top: 60px;
+            height: calc(100vh - 60px);
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .history-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            color: white;
+        }
+
+        .history-list li {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        /* Adjust layout when menu is open */
+        .menu-open .main-content {
+            width: calc(100% - 300px);
+        }
+
+        .menu-open .history-panel {
+            width: 300px;
+            padding: 20px;
+        }
+
+        .menu-open .history-content {
+            display: block;
+        }
+
+        /* Instruction Popup Modal */
+        .modal {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2DAA9E;
+            margin-bottom: 10px;
+        }
+
+        .instruction-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instruction-list li {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .instruction-list li i {
+            margin-right: 10px;
+            color: #40e0d0;
+        }
+
+        .proceed-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #40e0d0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .proceed-btn:hover {
+            background-color: #2DAA9E;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .detection-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .confidence-meter {
+            height: 5px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .confidence-level {
+            height: 100%;
+            background: #40e0d0;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .detection-box {
+            position: absolute;
+            border: 2px solid #40e0d0;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+        
+        .detection-label {
+            position: absolute;
+            background: rgba(64, 224, 208, 0.8);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        
+        .video-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            background: #40e0d0;
+            color: rgb(48, 47, 47);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #2DAA9E;
+        }
+        
+        .control-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .upload-btn {
+            background: #4285f4;
+        }
+        
+        .upload-btn:hover {
+            background: #3367d6;
+        }
+        .upload-btn {
+            font-size: 12px;
+            text-decoration: none; /* Extra assurance for the upload button */
+        }
+
+           @media (max-width: 768px) {
+        .title {
+            font-size: 18px;
+        }
+        
+        .subtitle {
+            font-size: 11px;
+        }
+        
+        .home-button, .menu-icon {
+            width: 22px;
+            height: 22px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .title-container {
+            padding: 20px 15px;
+        }
+        
+        .title {
+            font-size: 17px;
+            white-space: normal;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            font-size: 10px;
+            display: none; /* Hide subtitle on very small screens */
+        }
+        
+        .home-button, .menu-icon {
+            width: 25px;
+            height: 25px;
+        }
+    }
+    
+    @media (max-width: 400px) {
+        .title {
+            font-size: 14px;
+        }
+        
+        .title-container {
+            padding: 6px 10px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="modal" id="instructionModal">
+        <div class="modal-content">
+            <div class="modal-header">How to Use:</div>
+            <ul class="instruction-list">
+                <li><i class="fas fa-hand-pointer"></i>Place your hand in front of the camera.</li>
+                <li><i class="fas fa-camera"></i>Ensure proper lighting for better accuracy.</li>
+                <li><i class="fas fa-text-height"></i>View the translated text in the input box.</li>
+                <li><i class="fas fa-history"></i>Check translation history in the right panel.</li>
+            </ul>
+            <button class="proceed-btn" id="proceedBtn">Proceed</button>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <div class="title-container">
+        <a href="{% url 'home' %}">
+            <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" class="home-button" alt="Home">
+        </a>
+        <div class="title-content">
+            <div class="title">SIGN LANGUAGE TO TEXT TRANSLATION</div>
+            <div class="subtitle"><i>Place hand within the camera's view.</i></div>
+        </div>
+        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828859.png" class="menu-icon" id="menu-icon" alt="Menu" onclick="toggleMenu()">
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="camera-container">
+            <div class="video-container">
+                <video id="camera-feed" autoplay playsinline></video>
+            </div>
+        </div>
+        
+        <div class="detection-status">
+            <div id="status-message">Loading model...</div>
+            <div class="confidence-meter">
+                <div id="confidence-level" class="confidence-level"></div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <label for="text-input">Translated Text:</label>
+            <input type="text" id="text-input" placeholder="Sign will appear here" readonly>
+            <i class="fas fa-volume-up speaker-icon" id="speaker-icon"></i>
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn" class="control-btn">
+                <i class="fas fa-play"></i> Start Detection
+            </button>
+            <button id="stop-btn" class="control-btn" disabled>
+                <i class="fas fa-stop"></i> Stop Detection
+            </button>
+            <button id="clear-btn" class="control-btn">
+                <i class="fas fa-trash-alt"></i> Clear Text
+            </button>
+            <a href="{% url 'upload' %}" id="upload-btn" class="control-btn upload-btn">
+                <i class="fas fa-upload"></i> Upload Video
+            </a>
+        </div>
+        
+    </div>
+    
+    <div id="history-panel" class="history-panel">
+        <div class="history-content">
+            <div class="history-title">Translation History</div>
+            <ul id="history-list" class="history-list">
+                <!-- History items will be added dynamically -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    // Global variables
+    let model = null;
+    let isDetecting = false;
+    let detectionInterval = null;
+    let stream = null;
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        // Show instruction modal on page load
+        const instructionModal = document.getElementById("instructionModal");
+        instructionModal.style.display = "flex";
+
+        // Proceed button functionality
+        const proceedBtn = document.getElementById("proceedBtn");
+        proceedBtn.addEventListener("click", function () {
+            instructionModal.style.display = "none";
+        });
+
+        // Start camera function
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                window.cameraStream = stream;
+                document.getElementById('camera-feed').srcObject = stream;
+            })
+            .catch(error => {
+                console.error("Error accessing the camera:", error);
+            });
+
+        // Initialize TensorFlow.js and load model
+        initSignDetection();
+        
+        // Setup control buttons
+        document.getElementById('start-btn').addEventListener('click', startDetection);
+        document.getElementById('stop-btn').addEventListener('click', stopDetection);
+        document.getElementById('clear-btn').addEventListener('click', clearText);
+        
+        // Text-to-speech functionality
+        document.getElementById('speaker-icon').addEventListener('click', () => {
+            const text = document.getElementById('text-input').value;
+            if (text) {
+                speakText(text);
+            }
+        });
+        
+        // Close menu when pressing ESC key
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeMenu();
+            }
+        });
+    });
+
+    function toggleMenu() {
+        const historyPanel = document.getElementById("history-panel");
+        if (historyPanel.style.width === "250px") {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    }
+    function openMenu() {
+        const historyPanel = document.getElementById("history-panel");
+        historyPanel.style.width = "250px";
+        historyPanel.style.padding = "20px";
+        document.querySelector(".history-content").style.display = "block";
+    }
+
+    function closeMenu() {
+        const historyPanel = document.getElementById("history-panel");
+        historyPanel.style.width = "0";
+        historyPanel.style.padding = "0";
+        document.querySelector(".history-content").style.display = "none";
+    }
+
+    async function initSignDetection() {
+        try {
+            // Load TensorFlow.js and handpose model
+            await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs');
+            await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose');
+            
+            // Show status
+            updateStatus('Loading hand detection model...', 30);
+            
+            // Load handpose model
+            model = await handpose.load();
+            updateStatus('Model loaded. Click "Start Detection" to begin.', 100);
+            
+            // Enable start button
+            document.getElementById('start-btn').disabled = false;
+            
+        } catch (error) {
+            console.error("Error loading models:", error);
+            updateStatus('Error loading models. Please refresh the page.', 0);
+        }
+    }
+    
+    function startDetection() {
+        if (!model || isDetecting) return;
+        
+        isDetecting = true;
+        updateStatus('Detecting hands...', 50);
+        
+        document.getElementById('start-btn').disabled = true;
+        document.getElementById('stop-btn').disabled = false;
+        
+        // Start detection loop
+        detectionInterval = setInterval(detectHands, 100); // Run every 100ms
+    }
+    
+    function stopDetection() {
+        isDetecting = false;
+        if (detectionInterval) {
+            clearInterval(detectionInterval);
+        }
+        updateStatus('Detection stopped. Click "Start Detection" to resume.', 70);
+        
+        document.getElementById('start-btn').disabled = false;
+        document.getElementById('stop-btn').disabled = true;
+        
+        // Clear any existing detection boxes
+        clearDetectionBoxes();
+    }
+    
+    function clearText() {
+        document.getElementById('text-input').value = '';
+    }
+    
+    async function detectHands() {
+        const video = document.getElementById('camera-feed');
+        const predictions = await model.estimateHands(video);
+        
+        // Clear previous detection boxes
+        clearDetectionBoxes();
+        
+        if (predictions.length > 0) {
+            // Get the first hand prediction
+            const hand = predictions[0];
+            
+            // Draw bounding box
+            drawDetectionBox(hand.boundingBox);
+            
+            // Here you would:
+            // 1. Crop the hand region
+            // 2. Preprocess it for your Keras model
+            // 3. Send to your Django backend for classification
+            // 4. Update the text input with the result
+            
+            // For now, we'll simulate a detection
+            simulateSignDetection();
+        } else {
+            updateStatus('No hands detected', 20);
+        }
+    }
+    
+    function drawDetectionBox(box) {
+        const videoContainer = document.querySelector('.video-container');
+        
+        // Create or update detection box
+        let boxElement = document.getElementById('detection-box');
+        if (!boxElement) {
+            boxElement = document.createElement('div');
+            boxElement.id = 'detection-box';
+            boxElement.className = 'detection-box';
+            videoContainer.appendChild(boxElement);
+        }
+        
+        // Position the box
+        boxElement.style.left = `${box.topLeft[0]}px`;
+        boxElement.style.top = `${box.topLeft[1]}px`;
+        boxElement.style.width = `${box.bottomRight[0] - box.topLeft[0]}px`;
+        boxElement.style.height = `${box.bottomRight[1] - box.topLeft[1]}px`;
+        
+        // Create or update label
+        let labelElement = document.getElementById('detection-label');
+        if (!labelElement) {
+            labelElement = document.createElement('div');
+            labelElement.id = 'detection-label';
+            labelElement.className = 'detection-label';
+            videoContainer.appendChild(labelElement);
+        }
+        
+        labelElement.style.left = `${box.topLeft[0]}px`;
+        labelElement.style.top = `${box.topLeft[1] - 20}px`;
+        labelElement.textContent = 'Hand detected';
+    }
+    
+    function clearDetectionBoxes() {
+        const box = document.getElementById('detection-box');
+        const label = document.getElementById('detection-label');
+        
+        if (box) box.remove();
+        if (label) label.remove();
+    }
+    
+    function simulateSignDetection() {
+    const labels = { 
+        0: 'GOOD MORNING', 1: 'GOOD AFTERNOON', 2: 'GOOD EVENING', 3: 'HELLO',
+        4: 'HOW ARE YOU', 5: 'IM FINE', 6: 'NICE TO MEET YOU', 7: 'THANK YOU',
+        8: 'YOURE WELCOME', 9: 'SEE YOU TOMORROW', 10: 'UNDERSTAND', 11: 'DON\'T UNDERSTAND',
+        12: 'KNOW', 13: 'DON\'T KNOW', 14: 'NO', 15: 'YES', 16: 'WRONG', 17: 'CORRECT',
+        18: 'SLOW', 19: 'FAST', 20: 'ONE', 21: 'TWO', 22: 'THREE', 23: 'FOUR', 24: 'FIVE',
+        25: 'SIX', 26: 'SEVEN', 27: 'EIGHT', 28: 'NINE', 29: 'TEN', 30: 'JANUARY',
+        31: 'FEBRUARY', 32: 'MARCH', 33: 'APRIL', 34: 'MAY', 35: 'JUNE', 36: 'JULY',
+        37: 'AUGUST', 38: 'SEPTEMBER', 39: 'OCTOBER', 40: 'NOVEMBER', 41: 'DECEMBER',
+        42: 'MONDAY', 43: 'TUESDAY', 44: 'WEDNESDAY', 45: 'THURSDAY', 46: 'FRIDAY',
+        47: 'SATURDAY', 48: 'SUNDAY', 49: 'TODAY', 50: 'TOMORROW', 51: 'YESTERDAY',
+        52: 'FATHER', 53: 'MOTHER', 54: 'SON', 55: 'DAUGHTER', 56: 'GRANDFATHER',
+        57: 'GRANDMOTHER', 58: 'UNCLE', 59: 'AUNTIE', 60: 'COUSIN', 61: 'PARENTS',
+        62: 'BOY', 63: 'GIRL', 64: 'MAN', 65: 'WOMAN', 66: 'DEAF', 67: 'HARD OF HEARING',
+        68: 'WHEELCHAIR PERSON', 69: 'BLIND', 70: 'DEAF BLIND', 71: 'MARRIED', 72: 'BLUE',
+        73: 'GREEN', 74: 'RED', 75: 'BROWN', 76: 'BLACK', 77: 'WHITE', 78: 'YELLOW',
+        79: 'ORANGE', 80: 'GRAY', 81: 'PINK', 82: 'VIOLET', 83: 'LIGHT', 84: 'DARK',
+        85: 'BREAD', 86: 'EGG', 87: 'FISH', 88: 'MEAT', 89: 'CHICKEN', 90: 'SPAGHETTI',
+        91: 'RICE', 92: 'LONGANISA', 93: 'SHRIMP', 94: 'CRAB', 95: 'HOT', 96: 'COLD',
+        97: 'JUICE', 98: 'MILK', 99: 'COFFEE', 100: 'TEA', 101: 'BEER', 102: 'WINE',
+        103: 'SUGAR', 104: 'NO SUGAR'
+    };
+
+
+    let handDetected = false; // Variable to track if hand is detected
+
+// Simulated hand detection function (replace with actual detection logic)
+function isHandDetected() {
+    return handDetected; 
+}
+
+function simulateSignDetection() {
+    if (!isHandDetected()) {
+        console.log("No hand detected, skipping sign display.");
+        return; // Do nothing if no hand is detected
+    }
+
+    const signs = [
+        { sign: "thankyou", confidence: 0.98 },
+        { sign: "iloveyou", confidence: 0.95 },
+        { sign: "mother", confidence: 0.92 },
+        { sign: "father", confidence: 0.93 },
+        { sign: "goodmorning", confidence: 0.97 },
+        { sign: "goodevening", confidence: 0.94 },
+        { sign: "1", confidence: 0.99 },
+        { sign: "2", confidence: 0.96 },
+        { sign: "3", confidence: 0.99 }
+    ];
+
+    // Select a sign and its corresponding confidence
+    const randomIndex = Math.floor(Math.random() * signs.length);
+    const randomSign = signs[randomIndex].sign;
+    const confidence = signs[randomIndex].confidence.toFixed(2);
+
+    console.log(`Sign: ${randomSign}, Confidence: ${confidence}`);
+
+    // Update text input and status
+    document.getElementById('text-input').value = randomSign;
+    updateStatus(`Detected: ${randomSign}`, confidence * 100);
+
+    // Add to history
+    addToHistory(randomSign);
+}
+
+// Set interval for every 2 seconds (2000 milliseconds)
+setInterval(simulateSignDetection, 2000);
+
+// Simulate hand detection toggle (to test)
+setTimeout(() => { handDetected = true; }, 5000);  // Simulate hand detection after 5 seconds
+setTimeout(() => { handDetected = false; }, 10000); // Simulate hand disappearance after 10 seconds
+
+    // Add to history
+    addToHistory(randomSign);
+}
+
+// Set interval for every 2 seconds (2000 milliseconds)
+setInterval(simulateSignDetection, 2000);
+
+    
+    function updateStatus(message, confidencePercent) {
+        document.getElementById('status-message').textContent = message;
+        document.getElementById('confidence-level').style.width = `${confidencePercent}%`;
+    }
+    
+    function addToHistory(text) {
+        const historyList = document.getElementById('history-list');
+        const historyItem = document.createElement('li');
+        historyItem.textContent = text;
+        historyList.prepend(historyItem);
+    }
+    
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
+        } else {
+            console.warn('Text-to-speech not supported in this browser');
+        }
+    }
+    
+    function loadScript(url) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+    </script>
+</body>
+</html>

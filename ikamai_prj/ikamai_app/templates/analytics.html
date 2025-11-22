@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+
+
+  <div class="container-fluid py-4"> <div class="d-flex justify-content-between align-items-center mb-4"> <h2 class="mb-0"> <i class="fas fa-chart-line me-2"></i> System Analytics </h2> <div> <a href="{% url 'export_analytics' %}" class="btn btn-success me-2"> <i class="fas fa-file-export me-2"></i> Export Analytics </a> <button onclick="window.print()" class="btn btn-primary"> <i class="fas fa-print me-2"></i> Print </button> </div> </div>
+
+  <div class="row g-4">
+    <!-- Top Users Chart -->
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header fw-bold">
+          <i class="fas fa-user me-2"></i> Top Users (Most Translations)
+        </div>
+        <div class="card-body" style="height:350px;">
+          <canvas id="topUsersChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popular Translations Chart -->
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header fw-bold">
+          <i class="fas fa-search me-2"></i> Popular Translations
+        </div>
+        <div class="card-body" style="height:350px;">
+          <canvas id="popularChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Signups Chart -->
+    <div class="col-md-12">
+      <div class="card shadow-sm">
+        <div class="card-header fw-bold">
+          <i class="fas fa-user-plus me-2"></i> User Signups Per Month
+        </div>
+        <div class="card-body" style="height:350px;">
+          <canvas id="signupChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const topUsers = {{ top_users|safe }};
+  const signupData = {{ signup_data|safe }};
+  const popularQueries = {{ popular_queries|safe }};
+
+  // Top Users - Bar Chart
+  new Chart(document.getElementById("topUsersChart"), {
+    type: "bar",
+    data: {
+      labels: topUsers.map(u => u.username),
+      datasets: [{
+        label: "Translations",
+        data: topUsers.map(u => u.count),
+        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // Popular Translations - Pie Chart
+  new Chart(document.getElementById("popularChart"), {
+    type: "pie",
+    data: {
+      labels: popularQueries.map(p => p.query),
+      datasets: [{
+        data: popularQueries.map(p => p.count),
+        backgroundColor: ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b"]
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // User Signups - Line Chart
+  new Chart(document.getElementById("signupChart"), {
+    type: "line",
+    data: {
+      labels: signupData.map(s => s.month),
+      datasets: [{
+        label: "User Signups",
+        data: signupData.map(s => s.count),
+        borderColor: "#4e73df",
+        backgroundColor: "rgba(78, 115, 223, 0.2)",
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } }
+      }
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,817 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Sign Language Translator</title>
+    <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #30D5C8;
+            --primary-dark: #2DAA9E;
+            --primary-light: #66D2CE;
+            --secondary: #FF6B6B;
+            --dark: #2D3748;
+            --light: #F8F9FA;
+            --gray: #A0AEC0;
+            --success: #48BB78;
+            --warning: #ECC94B;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f4f4f4 0%, #e6f7f5 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        .header {
+            padding: 1rem 2rem;
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header img {
+            height: 50px;
+            transition: var(--transition);
+        }
+
+        .header img:hover {
+            transform: scale(1.05);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-icon {
+            color: var(--primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .nav-icon:hover {
+            background-color: rgba(48, 213, 200, 0.15);
+            transform: scale(1.05);
+        }
+
+        /* Notification Modal */
+        .notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-title p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* Card Layout */
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            color: white;
+        }
+
+        .card-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-content {
+            padding: 2rem;
+        }
+
+        /* Translation Form */
+        .translation-form {
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: #f8fafc;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(48, 213, 200, 0.2);
+            background-color: white;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Input Container with Icons */
+        .input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-icons {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .speaker-icon,
+        .microphone-icon {
+            font-size: 1.2rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .speaker-icon:hover,
+        .microphone-icon:hover {
+            color: var(--primary);
+        }
+
+        /* Button Styles */
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #38a169;
+            transform: translateY(-2px);
+        }
+
+        /* Video Player */
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f1f5f9;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .video-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            height: 100%;
+        }
+
+        .video-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Results Section */
+        .results-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+        }
+
+        .no-results i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* History Panel */
+        .history-panel {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 500px;
+            margin-top: 1rem;
+        }
+
+        .history-item {
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            background: rgba(48, 213, 200, 0.1);
+            transform: translateX(5px);
+        }
+
+        .history-text {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+        }
+
+        .empty-history i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+               .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .instruction-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .instruction-list li {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .instruction-list li:last-child {
+            border-bottom: none;
+        }
+
+        .instruction-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(48, 213, 200, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+                margin: 1.5rem auto;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .page-title h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-header h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Notification Modal -->
+    <div id="notification" class="notification">
+        <div class="notification-content">
+            <span id="notification-message"></span>
+        </div>
+    </div>
+
+    <div class="header">
+        <a href="{% url 'home' %}">
+            <img src="{% static 'logo.png' %}" alt="KUMPAS Logo">
+        </a>
+        <div class="header-right">
+            <div class="nav-icon" id="help-btn">
+                <i class="fas fa-question-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Text to Sign Language Translator</h1>
+            <p>Search for sign language videos by title</p>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-hands"></i> Translation Result</h2>
+                </div>
+                <div class="card-content">
+                    <!-- Video display area with Django template integration -->
+                    <div id="results-container">
+                        {% if video_url %}
+                        <!-- <h3 class="results-title">
+                            <i class="fas fa-film"></i> Playing: {{ query }}
+                        </h3> -->
+                        <div class="video-container">
+                            <video class="video-player" controls id="sign-video">
+                                <source src="{{ video_url }}" type="video/mp4" id="video-source">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        {% elif searched %}
+                        <div class="no-results">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>No video found for "{{ query }}"</p>
+                        </div>
+                        {% else %}
+                        <div class="video-container">
+                            <div class="video-placeholder">
+                                <i class="fas fa-play-circle"></i>
+                                <p>Input Text to Translate</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Search Form -->
+                    <div class="translation-form">
+                        <form method="GET" action="{% url 'search_video' %}" id="search-form">
+                            <div class="input-container">
+                                <label for="search-input" class="form-label">
+                                    <i class="fas fa-search"></i> Input Text to Translate
+                                </label>
+                                <input type="text" id="search-input" name="q" class="form-input"
+                                    placeholder="Enter text to translate" value="{% if query %}{{ query }}{% endif %}"
+                                    required>
+                                <div class="input-icons">
+                                    <i class="fas fa-volume-up speaker-icon" id="speaker-icon"></i>
+                                    <i class="fas fa-microphone microphone-icon" id="microphone-icon"></i>
+                                </div>
+                            </div>
+
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-primary" id="search-btn">
+                                    <i class="fas fa-search"></i> Translate
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="clear-btn">
+                                    <i class="fas fa-eraser"></i> Clear
+                                </button>
+                                <button type="button" class="btn btn-success" id="save-btn">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card history-panel">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Search History</h2>
+                </div>
+                <div class="card-content">
+                    <div class="history-list" id="history-list">
+                        {% if history_list %}
+                        {% for item in history_list %}
+                        <div class="history-item" onclick="reSearch('{{ item.query }}')">
+                            <div class="history-text">{{ item.query }}</div>
+                            <div class="history-time">{{ item.timestamp }}</div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="empty-history">
+                            <i class="fas fa-history"></i>
+                            <p>No search history yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <div class="modal" id="instructionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <i class="fas fa-info-circle"></i> How to Use
+        </div>
+        <ul class="instruction-list">
+            <li>
+                <div class="instruction-icon">
+                    <i class="fas fa-keyboard"></i>
+                </div>
+                <div>Type the word you want to translate in the text box</div>
+            </li>
+            <li>
+                <div class="instruction-icon">
+                    <i class="fas fa-language"></i>
+                </div>
+                <div>Only words available in Filipino Sign Language will be translated</div>
+            </li>
+            <li>
+                <div class="instruction-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div>The translated sign will play in the video area</div>
+            </li>
+            <li>
+                <div class="instruction-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div>View your past translations in the history panel on the right</div>
+            </li>
+        </ul>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="proceedBtn">
+                <i class="fas fa-play"></i> Get Started
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM Elements
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const historyList = document.getElementById('history-list');
+    const speakerIcon = document.getElementById('speaker-icon');
+    const microphoneIcon = document.getElementById('microphone-icon');
+    const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notification-message');
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function () {
+        const djangoData = {
+            query: "{{ query|escapejs }}",
+            videoUrl: "{{ video_url|escapejs }}"
+        };
+
+        // ✅ Only show modal if translation succeeded and user hasn't seen it yet
+        if (djangoData.videoUrl && !localStorage.getItem("seenInstructionModal")) {
+            const instructionModal = document.getElementById("instructionModal");
+            instructionModal.style.display = "flex";
+
+            const proceedBtn = document.getElementById("proceedBtn");
+            proceedBtn.addEventListener("click", function () {
+                instructionModal.style.display = "none";
+                // Save flag so we don’t show it again
+                localStorage.setItem("seenInstructionModal", "true");
+            });
+        }
+
+        // Add event listener for help button → always re-open modal
+        document.getElementById("help-btn").addEventListener("click", function () {
+            const instructionModal = document.getElementById("instructionModal");
+            instructionModal.style.display = "flex";
+        });
+
+        // ✅ Load history only if query exists
+        if (djangoData.query) {
+            addToBrowserHistory(djangoData.query, djangoData.videoUrl);
+            loadBrowserHistory();
+        }
+    });
+
+    // Show notification function
+    function showNotification(message, duration = 3000) {
+        notificationMessage.textContent = message;
+        notification.style.display = 'block';
+
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, duration);
+    }
+
+    // Clear the search input and results
+    clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        window.location.href = window.location.pathname;
+    });
+
+    // Save search
+    saveBtn.addEventListener('click', function () {
+        const query = searchInput.value.trim();
+
+        if (query === '') {
+            showNotification('Please enter text to save');
+            return;
+        }
+
+        showNotification('Translation saved successfully!');
+    });
+
+    // Text-to-speech functionality
+    speakerIcon.addEventListener('click', function () {
+        const text = searchInput.value.trim();
+
+        if (text === '') {
+            showNotification('Please enter text to speak');
+            return;
+        }
+
+        if ('speechSynthesis' in window) {
+            const speech = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(speech);
+            showNotification('Reading text aloud');
+        } else {
+            showNotification('Text-to-speech not supported in your browser');
+        }
+    });
+
+    // Speech recognition functionality
+    microphoneIcon.addEventListener('click', function () {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+
+            recognition.start();
+            showNotification('Listening... Speak now');
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                searchInput.value = transcript;
+                showNotification('Speech recognized');
+            };
+
+            recognition.onerror = function (event) {
+                showNotification('Error occurred in recognition: ' + event.error);
+            };
+        } else {
+            showNotification('Speech recognition not supported in your browser');
+        }
+    });
+
+    function reSearch(query) {
+        document.getElementById('search-input').value = query;
+        document.getElementById('search-form').submit();
+    }
+</script>

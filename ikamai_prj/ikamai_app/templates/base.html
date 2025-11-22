@@ -1,0 +1,716 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iKamAI Admin</title>
+  <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #30D5C8;
+      --primary-dark: #2abfb4;
+      --secondary: #6c757d;
+      --success: #1cc88a;
+      --info: #36b9cc;
+      --warning: #f6c23e;
+      --danger: #e74a3b;
+      --light: #f8f9fa;
+      --dark: #5a5c69;
+      --bg-gradient: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+      --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      min-height: 100vh;
+      width: 250px;
+      background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding: 0;
+      color: white;
+      box-shadow: var(--card-shadow);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 20px 15px;
+      background: rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .sidebar-header img {
+      width: 45px;
+      height: auto;
+      margin-right: 12px;
+    }
+
+    .sidebar-header h4 {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .sidebar-header small {
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+
+    .sidebar .nav {
+      padding: 0 10px;
+    }
+
+    .sidebar .nav-link {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin: 6px 0;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar .nav-link i {
+      margin-right: 12px;
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(5px);
+    }
+
+    .sidebar .nav-link.text-danger:hover {
+      background: rgba(231, 74, 59, 0.2);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 250px;
+      padding: 25px;
+      transition: all 0.3s ease;
+    }
+
+    /* Header */
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .page-header h2 {
+      font-weight: 700;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      border-left: 4px solid;
+      height: 100%;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+
+    .stat-card.users {
+      border-left-color: #4e73df;
+    }
+
+    .stat-card.videos {
+      border-left-color: var(--success);
+    }
+
+    .stat-card.translations {
+      border-left-color: var(--info);
+    }
+
+    .stat-card.searches {
+      border-left-color: var(--warning);
+    }
+
+    .stat-icon {
+      font-size: 2.2rem;
+      margin-bottom: 15px;
+      opacity: 0.8;
+    }
+
+    .stat-card.users .stat-icon {
+      color: #4e73df;
+    }
+
+    .stat-card.videos .stat-icon {
+      color: var(--success);
+    }
+
+    .stat-card.translations .stat-icon {
+      color: var(--info);
+    }
+
+    .stat-card.searches .stat-icon {
+      color: var(--warning);
+    }
+
+    .stat-content h3 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .stat-content .text-muted {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Cards */
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+
+    .card-header {
+      background: #fff;
+      border-bottom: 1px solid #e3e6f0;
+      padding: 15px 20px;
+      font-weight: 700;
+      color: var(--dark);
+      border-radius: 12px 12px 0 0 !important;
+      display: flex;
+      justify-content: between;
+      align-items: center;
+    }
+
+    .card-header h6 {
+      margin: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-header h6 i {
+      margin-right: 8px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* List Groups */
+    .list-group-item {
+      border: none;
+      border-bottom: 1px solid #e3e6f0;
+      padding: 15px 0;
+    }
+
+    .list-group-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Tables */
+    .table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
+
+    .table th {
+      font-weight: 600;
+      color: var(--dark);
+      border-top: 1px solid #e3e6f0;
+      border-bottom: 2px solid #e3e6f0;
+      padding: 12px 15px;
+    }
+
+    .table td {
+      padding: 12px 15px;
+      vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: rgba(48, 213, 200, 0.05);
+    }
+
+    /* Badges */
+    .badge {
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+
+    .bg-primary {
+      background-color: #4e73df !important;
+    }
+
+    .bg-warning {
+      background-color: var(--warning) !important;
+    }
+
+    /* Buttons */
+    .btn {
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 8px 16px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    /* Toggle Button */
+    .navbar-toggler {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 8px;
+      z-index: 1100;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.3);
+    }
+
+    /* Alerts */
+    .alert {
+      border-radius: 10px;
+      border: none;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 20px;
+    }
+
+    
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 220px;
+      }
+
+      .sidebar.sidebar-expanded {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 20px 15px;
+      }
+
+      .navbar-toggler {
+        display: block;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-dark);
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'logout.html' %}
+  <button class="navbar-toggler" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="{% static 'logo.png' %}" alt="Logo">
+      <div>
+        {% if request.session.uid %}
+        <h4>{{ request.user.display_name }}</h4>
+        <small>Administrator</small>
+        {% else %}
+        <h4>Guest</h4>
+        <small>Please log in</small>
+        {% endif %}
+      </div>
+    </div>
+    <ul class="nav flex-column">
+      <li><a class="nav-link {% if request.resolver_match.url_name == 'admin-dashboard' %}active{% endif %}"
+          href="{% url 'admin-dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+      <li><a class="nav-link {% if request.resolver_match.url_name == 'video-management' %}active{% endif %}"
+          href="{% url 'video-management' %}"><i class="fas fa-video"></i> Videos</a></li>
+      <li><a class="nav-link {% if request.resolver_match.url_name == 'user-list' %}active{% endif %}"
+          href="{% url 'user-list'%}"><i class="fas fa-users"></i> Users</a></li>
+      <li><a class="nav-link {% if request.resolver_match.url_name == 'analytics_dashboard' %}active{% endif %}"
+          href="{% url 'analytics_dashboard' %}"><i class="fas fa-chart-line"></i> Analytics</a></li>
+      <li><a class="nav-link {% if request.resolver_match.url_name == 'edit_admin' %}active{% endif %}"
+          href="{% url 'edit_admin' %}"><i class="fas fa-user-cog"></i> Account</a></li>
+      <li class="mt-3"><a class="nav-link text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>
+          Logout</a></li>
+    </ul>
+  </div>
+
+  <!-- Main -->
+  <main class="main-content" id="mainContent">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      <i
+        class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% block content %}
+    <!-- Page Header -->
+    <div class="page-header fade-in">
+      <h2>
+        <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+        Admin Dashboard
+      </h2>
+      <p class="text-muted">Welcome to your administration dashboard. Here's an overview of your system.</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-6 col-lg-3 fade-in delay-1">
+        <div class="stat-card users">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ total_users }}</h3>
+            <p class="text-muted">Total Users</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 fade-in delay-2">
+        <div class="stat-card videos">
+          <div class="stat-icon">
+            <i class="fas fa-video"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ total_videos }}</h3>
+            <p class="text-muted">Total Videos</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 fade-in delay-3">
+        <div class="stat-card translations">
+          <div class="stat-icon">
+            <i class="fas fa-language"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ total_translations }}</h3>
+            <p class="text-muted">Translations</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 fade-in delay-4">
+        <div class="stat-card searches">
+          <div class="stat-icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ total_searches }}</h3>
+            <p class="text-muted">Searches</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Recent Users -->
+      <div class="col-lg-6 mb-4">
+        <div class="card fade-in">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0"><i class="fas fa-users me-2 text-primary"></i>Recent Users</h6>
+            <a href="{% url 'user-list' %}" class="btn btn-sm btn-primary">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              {% for user in recent_users %}
+              <div class="list-group-item d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                  <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-user text-white"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-0">{{ user.email|default:"Unknown" }}</h6>
+                  <small class="text-muted">Joined: {{ user.created_at }}</small>
+                </div>
+              </div>
+              {% empty %}
+              <p class="text-muted p-3 mb-0 text-center">No users found.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Videos -->
+      <div class="col-lg-6 mb-4">
+        <div class="card fade-in">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0"><i class="fas fa-video me-2 text-success"></i>Recent Videos</h6>
+            <a href="{% url 'video-management' %}" class="btn btn-sm btn-success">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              {% for video in recent_videos %}
+              <div class="list-group-item">
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0 me-3">
+                    <i class="fas fa-film text-secondary fa-lg"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ video.title|default:"Untitled" }}</h6>
+                    <small class="text-muted">Uploaded: {{ video.upload_date|default:"Unknown" }}</small>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <p class="text-muted p-3 mb-0 text-center">No videos found.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+      <div class="col-lg-12 mb-4">
+        <div class="card fade-in">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0"><i class="fas fa-history me-2 text-info"></i>Recent Activities</h6>
+            <a href="{% url 'history_page' %}" class="btn btn-sm btn-info">View Full History</a>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>User</th>
+                    <th>Translation</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for activity in recent_activities %}
+                  <tr>
+                    <td>
+                      <span class="badge {% if activity.type == 'Translation' %}bg-primary{% else %}bg-warning{% endif %}">
+                        {{ activity.type }}
+                      </span>
+                    </td>
+                    <td>{{ activity.email }}</td>
+                    <td>
+                      {% if activity.type == 'Translation' %}
+                        {{ activity.text|truncatewords:10 }}
+                      {% else %}
+                        {{ activity.query|truncatewords:10 }}
+                      {% endif %}
+                    </td>
+                    <td>{{ activity.timestamp }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="4" class="text-center text-muted py-3">No recent activities</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Combined Activities -->
+    <div class="row">
+      <div class="col-lg-12 mb-4">
+        <div class="card fade-in">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0"><i class="fas fa-list-alt me-2 text-primary"></i>All Recent Activities</h6>
+            <a href="{% url 'history_page' %}" class="btn btn-sm btn-primary">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              {% for translation in recent_translations %}
+              <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <h6 class="mb-0">{{ translation.email }}</h6>
+                      <span class="badge bg-primary">Translation</span>
+                    </div>
+                    <p class="mb-1 text-muted">{{ translation.text|truncatewords:15 }}</p>
+                  </div>
+                  <small class="text-muted ms-2 text-nowrap">{{ translation.timestamp|date:"M d, H:i" }}</small>
+                </div>
+              </div>
+              {% endfor %}
+              
+              {% for search in recent_searches %}
+              <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <h6 class="mb-0">{{ search.email }}</h6>
+                      <span class="badge bg-warning text-dark">Search</span>
+                    </div>
+                    <p class="mb-1 text-muted">{{ search.query|truncatewords:15 }}</p>
+                  </div>
+                  <small class="text-muted ms-2 text-nowrap">{{ search.timestamp|date:"M d, H:i" }}</small>
+                </div>
+              </div>
+              {% endfor %}
+              
+              {% if not recent_translations and not recent_searches %}
+              <p class="text-muted p-3 mb-0 text-center">No recent activities found.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endblock %}
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Sidebar Toggle
+    document.addEventListener('DOMContentLoaded', function () {
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('sidebarToggle');
+      const mainContent = document.getElementById('mainContent');
+
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('sidebar-expanded');
+        
+        // Add overlay when sidebar is expanded on mobile
+        if (window.innerWidth < 992) {
+          if (sidebar.classList.contains('sidebar-expanded')) {
+            const overlay = document.createElement('div');
+            overlay.id = 'sidebarOverlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            overlay.style.zIndex = '999';
+            overlay.addEventListener('click', () => {
+              sidebar.classList.remove('sidebar-expanded');
+              document.body.removeChild(overlay);
+            });
+            document.body.appendChild(overlay);
+          } else {
+            const overlay = document.getElementById('sidebarOverlay');
+            if (overlay) document.body.removeChild(overlay);
+          }
+        }
+      });
+
+      // Auto-hide sidebar on mobile when clicking a link
+      if (window.innerWidth < 992) {
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            sidebar.classList.remove('sidebar-expanded');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (overlay) document.body.removeChild(overlay);
+          });
+        });
+      }
+
+      // Add animation to elements when they come into view
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('fade-in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Observe all cards for animation
+      document.querySelectorAll('.card').forEach(card => {
+        observer.observe(card);
+      });
+    });
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>
