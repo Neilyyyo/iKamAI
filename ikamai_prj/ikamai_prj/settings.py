@@ -126,21 +126,14 @@ load_dotenv()
 # 1. Get the raw string from environment
 raw_cred = os.getenv("FIREBASE_CREDENTIALS")
 
-if raw_cred:
-    # 2. Convert the string to a Python dictionary
-    cred_dict = json.loads(raw_cred)
+if not raw_cred:
+    raise ValueError("FIREBASE_CREDENTIALS environment variable not set on Render!")
 
-    # 3. CRITICAL FIX: Even with json.loads, .env sometimes escapes newlines wrong.
-    # This line ensures the Private Key is formatted correctly for Firebase.
-    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+cred_dict = json.loads(raw_cred)
+cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+cred = credentials.Certificate(cred_dict)
+firebase_admin.initialize_app(cred)
 
-    # 4. Initialize Firebase
-    cred = credentials.Certificate(cred_dict)
-    firebase_admin.initialize_app(cred)
-    
-    print("Success! Connected to project: ikamai-new")
-else:
-    print("Error: FIREBASE_CREDENTIALS not found in .env file")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
