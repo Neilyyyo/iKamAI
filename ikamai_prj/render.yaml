@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ikamai
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn ikamai.wsgi:application --bind 0.0.0.0:$PORT --timeout 120"
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_SETTINGS_MODULE
+        value: ikamai.settings
