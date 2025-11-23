@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG") == "False"
 
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")# set "example.com,www.example.com"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")# set "example.com,www.example.com"
 
 # Application definition
 INSTALLED_APPS = [
@@ -114,15 +114,33 @@ FIREBASE_CONTINUE_URL = "http://localhost:8000/login"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
-
 import os
+import json
 import firebase_admin
-from firebase_admin import credentials, firestore, credentials
-FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
-cred = credentials.Certificate(FIREBASE_CREDENTIALS)
-firebase_admin.initialize_app(cred)
+from firebase_admin import credentials
+from dotenv import load_dotenv
 
+# Load the .env file
+load_dotenv()
 
+# 1. Get the raw string from environment
+raw_cred = os.getenv("FIREBASE_CREDENTIALS")
+
+if raw_cred:
+    # 2. Convert the string to a Python dictionary
+    cred_dict = json.loads(raw_cred)
+
+    # 3. CRITICAL FIX: Even with json.loads, .env sometimes escapes newlines wrong.
+    # This line ensures the Private Key is formatted correctly for Firebase.
+    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+
+    # 4. Initialize Firebase
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
+    
+    print("Success! Connected to project: ikamai-new")
+else:
+    print("Error: FIREBASE_CREDENTIALS not found in .env file")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
