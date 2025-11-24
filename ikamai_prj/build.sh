@@ -46,4 +46,4 @@ echo "--- 🐍 Installing Python requirements ---"
 pip install -r requirements.txt
 
 echo "--- 📦 Collecting Static Files ---"
-python ikamai_prj/manage.py collectstatic --noinput
+python manage.py collectstatic --noinput
