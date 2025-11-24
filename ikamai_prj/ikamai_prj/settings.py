@@ -114,42 +114,51 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 # Firebase Admin SDK Initialization with error handling
+# ... imports ...
+
 def initialize_firebase():
+    # Option A: Check for the standard Env Var (string content)
     raw_cred = os.getenv("FIREBASE_CREDENTIALS")
     
-    if not raw_cred:
-        if DEBUG:
-            print("Warning: FIREBASE_CREDENTIALS not set, Firebase Admin SDK not initialized")
-            return
-        else:
-            raise ValueError("FIREBASE_CREDENTIALS environment variable not set!")
+    # Option B: Check for the Render Secret File path
+    # Render usually stores secret files in /etc/secrets/
+    cred_file_path = "/etc/secrets/firebase_credentials.json"
     
+    cred_dict = None
+
     try:
-        cred_dict = json.loads(raw_cred)
-        # Handle newlines in private key
+        # Priority 1: Check if the Secret File exists (Best for Render)
+        if os.path.exists(cred_file_path):
+            with open(cred_file_path, 'r') as f:
+                cred_dict = json.load(f)
+                
+        # Priority 2: Check if the Env Var string exists (Fallback/Local)
+        elif raw_cred:
+            cred_dict = json.loads(raw_cred)
+            
+        else:
+            if DEBUG:
+                print("Warning: No Firebase credentials found (Env var or File).")
+                return
+            else:
+                raise ValueError("Missing Firebase Credentials!")
+
+        # Fix newlines in private key if necessary
         if "private_key" in cred_dict:
             cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
-        
-        # Check if Firebase app is already initialized
+
+        # Initialize App
         if not firebase_admin._apps:
             cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred)
             print("Firebase Admin SDK initialized successfully")
-        else:
-            print("Firebase Admin SDK already initialized")
-            
+
     except json.JSONDecodeError as e:
-        error_msg = f"Invalid JSON in FIREBASE_CREDENTIALS: {e}"
-        if DEBUG:
-            print(f"Warning: {error_msg}")
-        else:
-            raise ValueError(error_msg)
+        # ... existing error handling ...
+        raise ValueError(f"Invalid JSON in credentials: {e}")
     except Exception as e:
-        error_msg = f"Error initializing Firebase: {e}"
-        if DEBUG:
-            print(f"Warning: {error_msg}")
-        else:
-            raise
+        # ... existing error handling ...
+        raise
 
 # Initialize Firebase
 initialize_firebase()
