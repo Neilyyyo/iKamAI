@@ -122,7 +122,7 @@ def initialize_firebase():
     
     # Option B: Check for the Render Secret File path
     # Render usually stores secret files in /etc/secrets/
-    cred_file_path = "/etc/secrets/firebase_credentials.json"
+    cred_file_path = "/etc/secrets/ikamai.json"
     
     cred_dict = None
 
@@ -154,11 +154,17 @@ def initialize_firebase():
             print("Firebase Admin SDK initialized successfully")
 
     except json.JSONDecodeError as e:
-        # ... existing error handling ...
-        raise ValueError(f"Invalid JSON in credentials: {e}")
+        error_msg = f"Invalid JSON in FIREBASE_CREDENTIALS: {e}"
+        if DEBUG:
+            print(f"Warning: {error_msg}")
+        else:
+            raise ValueError(error_msg)
     except Exception as e:
-        # ... existing error handling ...
-        raise
+        error_msg = f"Error initializing Firebase: {e}"
+        if DEBUG:
+            print(f"Warning: {error_msg}")
+        else:
+            raise
 
 # Initialize Firebase
 initialize_firebase()
