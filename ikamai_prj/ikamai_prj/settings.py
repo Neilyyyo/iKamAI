@@ -102,7 +102,11 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Firebase Configuration
+# Firebase Configuration
 FIREBASE_WEB_API_KEY = os.getenv("FIREBASE_WEB_API_KEY")
+
+# ✅ ADD THIS LINE so other files can access settings.FIREBASE_CREDENTIALS
+FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
 
 # Use different redirect URLs for development vs production
 if DEBUG:

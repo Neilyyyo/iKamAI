@@ -3,7 +3,7 @@ import numpy as np
 from keras.models import load_model
 from cvzone.HandTrackingModule import HandDetector
 import threading
-import enchant
+from spellchecker import SpellChecker
 import pyttsx3
 import math
 
@@ -15,8 +15,14 @@ class SignPredictor:
         self.cap = cv2.VideoCapture(0)
         self.detector = HandDetector(maxHands=1)
         self.lock = threading.Lock()
-        self.english_dict = enchant.Dict("en_US")
-
+        
+        # --- CHANGED: Initialize SpellChecker and Autocomplete List ---
+        self.spell = SpellChecker()
+        # We create a sorted list of all words (most frequent first)
+        # This allows us to perform "Autocomplete" (Prefix search)
+        # Sort items by frequency (index 1) in descending order to mimic most_common()
+        self.vocab = [w for w, f in sorted(self.spell.word_frequency.items(), key=lambda pair: pair[1], reverse=True)]
+        
         self.str = ""
         self.word = ""
         self.word1 = " "
@@ -28,9 +34,10 @@ class SignPredictor:
         self.prev_char = ""
         self.current_symbol = ""
         self.speak_engine = pyttsx3.init()
-        self.english_dict = enchant.Dict("en_US")
+        
         self.prediction = ""
         self.suggestions = ["", "", "", ""]
+        self.manual_override = False 
 
     def distance(self, x, y):
         return math.sqrt(((x[0] - y[0]) ** 2) + ((x[1] - y[1]) ** 2))
@@ -104,7 +111,6 @@ class SignPredictor:
                 yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
         finally:
-            # ✅ Always release when the stream is closed
             if self.cap and self.cap.isOpened():
                 self.cap.release()
                 self.cap = None
@@ -116,7 +122,7 @@ class SignPredictor:
             self.cap = None
 
     def predict(self, test_image):
-        # This should include your long gesture and prediction logic
+        # ... [Prediction Logic kept same as before] ...
         white=test_image
         white = white.reshape(1, 400, 400, 3)
         prob = np.array(self.model.predict(white)[0], dtype='float32')
@@ -144,7 +150,6 @@ class SignPredictor:
             if (self.pts[5][0] < self.pts[4][0]):
                 ch1 = 0
                 print("++++++++++++++++++")
-                # print("00000")
 
         # condition for [c0][aemnst]
         l = [[0, 0], [0, 6], [0, 2], [0, 5], [0, 1], [0, 7], [5, 2], [7, 6], [7, 1]]
@@ -284,7 +289,7 @@ class SignPredictor:
 
 
         # condition for [yj][x]
-        print("2222  ch1=+++++++++++++++++", ch1, ",", ch2)
+        # print("2222  ch1=+++++++++++++++++", ch1, ",", ch2)
         l = [[7, 2]]
         pl = [ch1, ch2]
         if pl in l:
@@ -503,7 +508,7 @@ class SignPredictor:
 
 
 
-        print(self.pts[4][0] < self.pts[5][0])
+        # print(self.pts[4][0] < self.pts[5][0])
         if ch1 == 'E' or ch1=='Y' or ch1=='B':
             if (self.pts[4][0] < self.pts[5][0]) and (self.pts[6][1] > self.pts[8][1] and self.pts[10][1] > self.pts[12][1] and self.pts[14][1] > self.pts[16][1] and self.pts[18][1] > self.pts[20][1]):
                 ch1="next"
@@ -535,23 +540,39 @@ class SignPredictor:
         self.ten_prev_char[self.count%10]=ch1
 
 
+        # --- CHANGED: Improved Suggestion Logic (Autocomplete) ---
         if len(self.str.strip()) != 0:
             st = self.str.rfind(" ")
             ed = len(self.str)
             word = self.str[st + 1:ed]
             self.word = word
+            
             if len(word.strip()) != 0:
-                self.english_dict.check(word)
-                suggestions = self.english_dict.suggest(word)
-                lenn = len(suggestions)
-                if lenn >= 4:
-                    self.word4 = suggestions[3]
-                if lenn >= 3:
-                    self.word3 = suggestions[2]
-                if lenn >= 2:
-                    self.word2 = suggestions[1]
-                if lenn >= 1:
-                    self.word1 = suggestions[0]
+                curr_word = word.strip().lower()
+                sug_list = []
+
+                # 1. AUTOCOMPLETE: Find words starting with curr_word
+                # We search our sorted vocab list. Since it's sorted by frequency, 
+                # the most likely completions come first.
+                # (e.g. 't' -> 'the', 'to', 'that')
+                # We limit to first 4 matches for speed and UI space.
+                matches = [w for w in self.vocab if w.startswith(curr_word)]
+                sug_list.extend(matches[:4])
+
+                # 2. SPELL CHECK: If we didn't find enough autocomplete options,
+                # we try to find corrections (e.g. 'teh' -> 'the')
+                if len(sug_list) < 4:
+                    candidates = self.spell.candidates(curr_word)
+                    if candidates:
+                        # Convert set to list and remove duplicates we already have
+                        cand_list = [c for c in list(candidates) if c not in sug_list]
+                        sug_list.extend(cand_list)
+                
+                # Assign results to variables
+                self.word1 = sug_list[0] if len(sug_list) > 0 else " "
+                self.word2 = sug_list[1] if len(sug_list) > 1 else " "
+                self.word3 = sug_list[2] if len(sug_list) > 2 else " "
+                self.word4 = sug_list[3] if len(sug_list) > 3 else " "
             else:
                 self.word1 = " "
                 self.word2 = " "
@@ -576,12 +597,24 @@ class SignPredictor:
             ed = len(self.str)
             word = self.str[st+1:ed]
             self.word = word
+            
+            # Same logic as above for update_sentence
             if len(word.strip()) != 0:
-                suggestions = self.english_dict.suggest(word)
-                self.word1 = suggestions[0] if len(suggestions) > 0 else " "
-                self.word2 = suggestions[1] if len(suggestions) > 1 else " "
-                self.word3 = suggestions[2] if len(suggestions) > 2 else " "
-                self.word4 = suggestions[3] if len(suggestions) > 3 else " "
+                curr_word = word.strip().lower()
+                sug_list = []
+                matches = [w for w in self.vocab if w.startswith(curr_word)]
+                sug_list.extend(matches[:4])
+
+                if len(sug_list) < 4:
+                    candidates = self.spell.candidates(curr_word)
+                    if candidates:
+                        cand_list = [c for c in list(candidates) if c not in sug_list]
+                        sug_list.extend(cand_list)
+
+                self.word1 = sug_list[0] if len(sug_list) > 0 else " "
+                self.word2 = sug_list[1] if len(sug_list) > 1 else " "
+                self.word3 = sug_list[2] if len(sug_list) > 2 else " "
+                self.word4 = sug_list[3] if len(sug_list) > 3 else " "
             else:
                 self.word1 = self.word2 = self.word3 = self.word4 = " "
             
@@ -600,12 +633,20 @@ class SignPredictor:
             word = self.str[st + 1:]
             self.word = word
             if word.strip():
-                suggestions = self.english_dict.suggest(word)
-                self.word1 = suggestions[0] if len(suggestions) > 0 else " "
-                self.word2 = suggestions[1] if len(suggestions) > 1 else " "
-                self.word3 = suggestions[2] if len(suggestions) > 2 else " "
-                self.word4 = suggestions[3] if len(suggestions) > 3 else " "
+                curr_word = word.strip().lower()
+                sug_list = []
+                matches = [w for w in self.vocab if w.startswith(curr_word)]
+                sug_list.extend(matches[:4])
+
+                if len(sug_list) < 4:
+                    candidates = self.spell.candidates(curr_word)
+                    if candidates:
+                        cand_list = [c for c in list(candidates) if c not in sug_list]
+                        sug_list.extend(cand_list)
+
+                self.word1 = sug_list[0] if len(sug_list) > 0 else " "
+                self.word2 = sug_list[1] if len(sug_list) > 1 else " "
+                self.word3 = sug_list[2] if len(sug_list) > 2 else " "
+                self.word4 = sug_list[3] if len(sug_list) > 3 else " "
             else:
                 self.word1 = self.word2 = self.word3 = self.word4 = " "
-
-
