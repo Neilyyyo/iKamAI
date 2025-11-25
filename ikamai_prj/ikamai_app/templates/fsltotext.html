@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
+ <style>
         :root {
             --primary: #30D5C8;
             --primary-dark: #2DAA9E;
@@ -649,7 +649,13 @@
         </div>
     </div>
 
-  <div class="card-grid">
+    <div class="container">
+        <div class="page-title">
+            <h1>Sign Language to Text Translation</h1>
+            <p>Real-time translation from sign language to text</p>
+        </div>
+
+     <div class="card-grid">
     <div class="card">
         <div class="card-header">
             <h2><i class="fas fa-video"></i> Live Camera Feed</h2>
@@ -695,7 +701,7 @@
         </div>
     </div>
 
-    <div class="card history-panel">
+      <div class="card history-panel">
         <div class="card-header">
             <h2><i class="fas fa-history"></i> Translation History</h2>
         </div>
@@ -706,6 +712,7 @@
     </div>
 </div>
 
+    <!-- Instruction Modal -->
     <div class="modal" id="instructionModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -934,6 +941,3 @@
                 .catch(err => console.error("Error loading history:", err));
         }
     </script>
-</body>
-
-</html>

@@ -3,7 +3,8 @@ import numpy as np
 from keras.models import load_model
 from cvzone.HandTrackingModule import HandDetector
 import threading
-import enchant
+# CHANGED: Replaced enchant with pyspellchecker
+from spellchecker import SpellChecker 
 import pyttsx3
 import math
 import base64
@@ -16,7 +17,9 @@ class SignPredictor:
         self.model = load_model('cnn8grps_rad1_model.h5')
         self.detector = HandDetector(maxHands=1)
         self.lock = threading.Lock()
-        self.english_dict = enchant.Dict("en_US")
+        
+        # CHANGED: Initialize SpellChecker instead of enchant.Dict
+        self.spell = SpellChecker()
 
         self.str = ""
         self.word = ""
@@ -73,7 +76,7 @@ class SignPredictor:
                 'suggestions': [self.word1, self.word2, self.word3, self.word4]
             }
 
-    # --- NEW: Process frame from frontend instead of Camera ---
+    # --- Process frame from frontend ---
     def process_web_frame(self, image_data_base64):
         try:
             # Decode base64 image
@@ -113,14 +116,10 @@ class SignPredictor:
             print(f"Error processing frame: {e}")
             return self.get_status()
 
-    # REMOVED: generate_frames() and release() 
-    # (Browser handles the camera stream now)
-
     def predict(self, test_image):
-        # [YOUR PREDICTION LOGIC - KEPT EXACTLY AS IS]
         white=test_image
         white = white.reshape(1, 400, 400, 3)
-        prob = np.array(self.model.predict(white, verbose=0)[0], dtype='float32') # Added verbose=0 for silence
+        prob = np.array(self.model.predict(white, verbose=0)[0], dtype='float32')
         ch1 = np.argmax(prob, axis=0)
         prob[ch1] = 0
         ch2 = np.argmax(prob, axis=0)
@@ -518,8 +517,11 @@ class SignPredictor:
             word = self.str[st + 1:ed]
             self.word = word
             if len(word.strip()) != 0:
-                self.english_dict.check(word)
-                suggestions = self.english_dict.suggest(word)
+                # CHANGED: pyspellchecker logic
+                # candidates returns a set, convert to list
+                cands = self.spell.candidates(word)
+                suggestions = list(cands) if cands else []
+                
                 lenn = len(suggestions)
                 if lenn >= 4:
                     self.word4 = suggestions[3]
@@ -554,7 +556,9 @@ class SignPredictor:
             word = self.str[st+1:ed]
             self.word = word
             if len(word.strip()) != 0:
-                suggestions = self.english_dict.suggest(word)
+                # CHANGED: pyspellchecker logic
+                cands = self.spell.candidates(word)
+                suggestions = list(cands) if cands else []
                 self.word1 = suggestions[0] if len(suggestions) > 0 else " "
                 self.word2 = suggestions[1] if len(suggestions) > 1 else " "
                 self.word3 = suggestions[2] if len(suggestions) > 2 else " "
@@ -575,7 +579,9 @@ class SignPredictor:
             word = self.str[st + 1:]
             self.word = word
             if word.strip():
-                suggestions = self.english_dict.suggest(word)
+                # CHANGED: pyspellchecker logic
+                cands = self.spell.candidates(word)
+                suggestions = list(cands) if cands else []
                 self.word1 = suggestions[0] if len(suggestions) > 0 else " "
                 self.word2 = suggestions[1] if len(suggestions) > 1 else " "
                 self.word3 = suggestions[2] if len(suggestions) > 2 else " "
