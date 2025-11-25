@@ -1149,46 +1149,65 @@ def get_sentencehistory(request):
 
     return JsonResponse(history, safe=False)
 
+# ==========================================
+# REPLACEMENT FOR LAZY LOADING SECTION
+# ==========================================
+import os
+from django.conf import settings
+from .utils import WordPredictor
+from .predictor import SignPredictor
 
-_sign_predictor_instance = None
-_word_predictor_instance = None
+# 1. SETUP ABSOLUTE PATHS (Fixes "File not found" on Render)
+WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'model.tflite')
 
-def get_sign_predictor():
-    """Lazy loader for SignPredictor (Character Detection)"""
-    global _sign_predictor_instance
-    if _sign_predictor_instance is None:
-        print("⏳ Loading SignPredictor model into memory...")
-        _sign_predictor_instance = SignPredictor()
-        print("✅ SignPredictor model loaded successfully.")
-    return _sign_predictor_instance
+# 2. GLOBAL INITIALIZATION (Runs ONCE when server starts)
+print("⏳ Initializing AI Models...")
 
-def get_word_predictor():
-    """Lazy loader for WordPredictor (Word Detection)"""
-    global _word_predictor_instance
-    if _word_predictor_instance is None:
-        print("⏳ Loading WordPredictor model into memory...")
-        _word_predictor_instance = WordPredictor()
-        print("✅ WordPredictor model loaded successfully.")
-    return _word_predictor_instance
+# --- Load Word Predictor ---
+try:
+    print(f"   Loading WordPredictor from: {WORD_MODEL_PATH}")
+    # Load the model once here. We pass the absolute path to be safe.
+    word_predictor = WordPredictor(model_path=WORD_MODEL_PATH)
+    print("   ✅ WordPredictor loaded.")
+except Exception as e:
+    print(f"   ❌ WordPredictor Failed: {e}")
+    word_predictor = None
 
+# --- Load Sign Predictor ---
+try:
+    print(f"   Loading SignPredictor...")
+    # Load the model once here.
+    sign_predictor = SignPredictor()
+    print("   ✅ SignPredictor loaded.")
+except Exception as e:
+    print(f"   ❌ SignPredictor Failed: {e}")
+    sign_predictor = None
+
+# 3. VIEWS USING GLOBAL VARIABLES
 
 def sign(request):
     return render(request, 'fsltotext.html')
 
+@csrf_exempt
 def predict(request):
-    predictor = get_sign_predictor() # Load model ONLY when needed
-    
+    """
+    View for Sign/Letter Prediction (Spelling Mode)
+    """
+    global sign_predictor # Use the global instance
+
+    if sign_predictor is None:
+        return JsonResponse({'status': 'error', 'message': 'Sign Model failed to load'}, status=500)
+
     # 1. Handle Image Upload (POST)
     if request.method == "POST":
         image_data = request.POST.get('image')
         if image_data:
-            # Send the base64 image to predictor.py
-            data = predictor.process_web_frame(image_data) 
+            data = sign_predictor.process_web_frame(image_data) 
             return JsonResponse(data)
 
     # 2. Handle Clear Command (GET)
     if request.GET.get("clear") == "true":
-        predictor.clear_fun()
+        sign_predictor.clear_fun()
         return JsonResponse({
             'character': '',
             'sentence': '',
@@ -1196,16 +1215,18 @@ def predict(request):
         })
 
     # 3. Default GET (Status check)
-    return JsonResponse(predictor.get_status())
+    return JsonResponse(sign_predictor.get_status())
 
 @csrf_exempt
 def apply_suggestion(request):
-    predictor = get_sign_predictor() # Load model ONLY when needed
+    global sign_predictor
+    if sign_predictor is None:
+        return JsonResponse({"success": False, "error": "Model not loaded"})
     
     try:
         data = json.loads(request.body)
         new_sentence = data.get("sentence", "")
-        predictor.apply_suggestion(new_sentence)
+        sign_predictor.apply_suggestion(new_sentence)
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
@@ -1231,28 +1252,21 @@ def translate_phrase(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-# Initialize the predictor
-# word_predictor = WordPredictor()
-
-# Unused helper (Video feed is now client-side)
-active_video_feeds = {}
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def release_camera(request):
-    # Only access the predictor if it was already loaded
-    global _word_predictor_instance
-    if _word_predictor_instance:
-        _word_predictor_instance.release()
+    # Camera is handled by frontend now, this is just a placeholder
     return JsonResponse({'status': 'camera_released'})
 
 @csrf_exempt
 def get_prediction(request):
     """
-    Handles both receiving frames (POST) and checking status (GET).
-    Uses Lazy Loading for WordPredictor.
+    View for Word/Sentence Prediction
     """
-    word_predictor = get_word_predictor() # Load model ONLY when needed
+    global word_predictor # Use the global instance
+
+    if word_predictor is None:
+        return JsonResponse({'prediction': 'Error', 'accuracy': 'Model Failed'}, status=500)
 
     # 1. Handle Image Upload (POST)
     if request.method == "POST":
@@ -1267,8 +1281,9 @@ def get_prediction(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def reset_prediction(request):
-    word_predictor = get_word_predictor() # Load model ONLY when needed
-    word_predictor.reset()
+    global word_predictor
+    if word_predictor:
+        word_predictor.reset()
     return JsonResponse({'status': 'reset'})
 
 # views.py
