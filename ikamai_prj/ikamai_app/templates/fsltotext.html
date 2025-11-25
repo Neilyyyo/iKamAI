@@ -496,49 +496,49 @@
         }
 
         /* Camera Container - Enforce 4:3 Aspect Ratio */
-.camera-container {
-    position: relative;
-    width: 100%;
-    /* This forces the box to keep a standard webcam shape */
-    aspect-ratio: 4 / 3; 
-    max-height: 480px; /* Prevents it from getting too huge on large screens */
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto; /* Centers the camera in the card */
-}
+        .camera-container {
+            position: relative;
+            width: 100%;
+            /* This forces the box to keep a standard webcam shape */
+            aspect-ratio: 4 / 3; 
+            max-height: 480px; /* Prevents it from getting too huge on large screens */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto; /* Centers the camera in the card */
+        }
 
-#videoElement {
-    width: 100%;
-    height: 100%;
-    /* 'contain' ensures the whole video is seen without cropping */
-    object-fit: contain; 
-    transform: scaleX(-1); /* Mirror effect for natural feel */
-}
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            /* 'contain' ensures the whole video is seen without cropping */
+            object-fit: contain; 
+            transform: scaleX(-1); /* Mirror effect for natural feel */
+        }
 
-/* Status Overlay */
-.camera-status {
-    position: absolute;
-    bottom: 1rem; /* CHANGED: Moves it to the bottom */
-    left: 1rem;   /* Keeps it on the left */
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    z-index: 10; /* Ensures it sits on top of the video */
-}
+        /* Status Overlay */
+        .camera-status {
+            position: absolute;
+            bottom: 1rem; /* CHANGED: Moves it to the bottom */
+            left: 1rem;   /* Keeps it on the left */
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 10; /* Ensures it sits on top of the video */
+        }
 
-#canvasElement {
-    display: none;
-}
+        #canvasElement {
+            display: none;
+        }
         /* Animations */
         @keyframes spin {
             to {
@@ -712,7 +712,6 @@
     </div>
 </div>
 
-    <!-- Instruction Modal -->
     <div class="modal" id="instructionModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -810,7 +809,7 @@
             fetch("{% url 'predict' %}", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/x-www-form-urlencoded", // Changed content type
+                    "Content-Type": "application/x-www-form-urlencoded", 
                     "X-CSRFToken": getCookie('csrftoken')
                 },
                 body: "image=" + encodeURIComponent(dataURL)
@@ -829,10 +828,10 @@
 
         function startPredictionLoop() {
             if (predictionInterval) clearInterval(predictionInterval);
-            predictionInterval = setInterval(processFrame, 500); // 500ms = 2 FPS (Adjust speed here)
+            predictionInterval = setInterval(processFrame, 500); // 500ms = 2 FPS
         }
 
-        // --- Existing Helper Functions (Suggestions, Clear, Speak) ---
+        // --- Helper Functions ---
 
         function applySuggestion(index) {
             const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
@@ -857,7 +856,7 @@
         }
 
         document.getElementById("clear-btn").addEventListener("click", function () {
-            fetch("{% url 'predict' %}?clear=true") // GET for clear is fine, or move to POST
+            fetch("{% url 'predict' %}?clear=true") 
                 .then(() => {
                     document.getElementById("sentence-output").value = "";
                     document.getElementById("char-output").value = "";
@@ -866,14 +865,30 @@
                 });
         });
 
+        // --- UPDATED SPEECH SYNTHESIS LOGIC ---
         document.getElementById("speak-btn").addEventListener("click", function () {
             let textToSpeak = document.getElementById("sentence-output").value;
+            
             if (textToSpeak.trim() !== "") {
+                // 1. Cancel current speech to prevent delays if clicked multiple times
+                window.speechSynthesis.cancel();
+
+                // 2. Create the utterance
                 let utterance = new SpeechSynthesisUtterance(textToSpeak);
+                
+                // 3. Optional: Configure the voice
+                utterance.lang = 'en-US'; // Force English
+                utterance.rate = 1;       // Normal Speed
+                utterance.pitch = 1;      // Normal Pitch
+
+                // 4. Speak
                 window.speechSynthesis.speak(utterance);
+                
+                // 5. Save to history (same as before)
                 saveToHistory(textToSpeak);
             }
         });
+        // --------------------------------------
 
         document.getElementById("stop-camera-btn").addEventListener("click", toggleCamera);
 
@@ -941,3 +956,5 @@
                 .catch(err => console.error("Error loading history:", err));
         }
     </script>
+</body>
+</html>
