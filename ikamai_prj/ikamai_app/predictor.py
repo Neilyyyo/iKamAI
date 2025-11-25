@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
-from keras.models import load_model
+import tensorflow as tf  # CHANGED: Import TensorFlow for TFLite
 from cvzone.HandTrackingModule import HandDetector
 import threading
-# CHANGED: Replaced enchant with pyspellchecker
 from spellchecker import SpellChecker 
 import pyttsx3
 import math
@@ -13,12 +12,19 @@ from PIL import Image
 
 class SignPredictor:
     def __init__(self):
-        # REMOVED: self.cap = cv2.VideoCapture(0)
-        self.model = load_model('cnn8grps_rad1_model.h5')
+        # REMOVED: self.model = load_model('cnn8grps_rad1_model.tflite')
+        
+        # CHANGED: Load TFLite Model
+        self.interpreter = tf.lite.Interpreter(model_path='cnn8grps_rad1_model.tflite')
+        self.interpreter.allocate_tensors()
+        
+        # Get input and output details
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        
         self.detector = HandDetector(maxHands=1)
         self.lock = threading.Lock()
         
-        # CHANGED: Initialize SpellChecker instead of enchant.Dict
         self.spell = SpellChecker()
 
         self.str = ""
@@ -117,9 +123,24 @@ class SignPredictor:
             return self.get_status()
 
     def predict(self, test_image):
-        white=test_image
+        white = test_image
+        # TFLite expects strict types, ensure float32
+        white = white.astype(np.float32)
         white = white.reshape(1, 400, 400, 3)
-        prob = np.array(self.model.predict(white, verbose=0)[0], dtype='float32')
+        
+        # CHANGED: TFLite Inference Logic
+        # 1. Set input tensor
+        self.interpreter.set_tensor(self.input_details[0]['index'], white)
+        
+        # 2. Run inference
+        self.interpreter.invoke()
+        
+        # 3. Get output tensor
+        output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
+        
+        # Continue with your existing logic using the output
+        prob = np.array(output_data[0], dtype='float32')
+        
         ch1 = np.argmax(prob, axis=0)
         prob[ch1] = 0
         ch2 = np.argmax(prob, axis=0)

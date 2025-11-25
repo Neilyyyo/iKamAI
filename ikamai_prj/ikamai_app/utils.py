@@ -1,19 +1,23 @@
 # myapp/utils.py
 import cv2
 import numpy as np
-from keras.models import model_from_json
+import tensorflow as tf # CHANGED: Import TensorFlow for TFLite
 import mediapipe as mp
 import base64
 import io
 from PIL import Image
 
 class WordPredictor:
-    def __init__(self, model_json="model.json", model_weights="model.h5", threshold=0.8):
-        # Load trained model
-        with open(model_json, "r") as f:
-            model_data = f.read()
-        self.model = model_from_json(model_data)
-        self.model.load_weights(model_weights)
+    # CHANGED: Updated arguments to accept a single .tflite file instead of json/h5
+    def __init__(self, model_path="model.tflite", threshold=0.8):
+        
+        # CHANGED: Load TFLite model and allocate tensors
+        self.interpreter = tf.lite.Interpreter(model_path=model_path)
+        self.interpreter.allocate_tensors()
+
+        # Get input and output details
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
 
         # Labels
         self.actions = np.array([
@@ -93,7 +97,20 @@ class WordPredictor:
 
                 # 5. Prediction Logic
                 if len(self.sequence) == 30:
-                    res = self.model.predict(np.expand_dims(self.sequence, axis=0), verbose=0)[0]
+                    # CHANGED: TFLite prediction logic
+                    
+                    # Prepare input data (TFLite usually requires float32)
+                    input_data = np.expand_dims(self.sequence, axis=0).astype(np.float32)
+                    
+                    # Set the input tensor
+                    self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
+                    
+                    # Run inference
+                    self.interpreter.invoke()
+                    
+                    # Get output tensor
+                    res = self.interpreter.get_tensor(self.output_details[0]['index'])[0]
+
                     self.predictions.append(np.argmax(res))
 
                     # Check consistency + confidence
