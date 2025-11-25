@@ -579,70 +579,6 @@ def save_translation_words(request):
 
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
-# views.py
-from django.shortcuts import render
-from django.utils.dateparse import parse_datetime
-from .context_processors import get_translation_history
-
-# @firebase_login_required
-# def get_history(request):
-#     start_date = request.GET.get("start_date")
-#     end_date = request.GET.get("end_date")
-
-#     if start_date and end_date:
-#         history = get_translation_history(parse_datetime(start_date), parse_datetime(end_date))
-#     else:
-#         history = get_translation_history()
-
-#     return render(request, "history.html", {"history": history})
-
-# @csrf_exempt
-# @firebase_login_required
-# def delete_history(request):
-#     if request.method == 'POST':
-#         try:
-#             history = History.collection.filter('user', '==', f'users/{request.user.uid}').fetch()
-#             for item in history:
-#                 item.delete()
-#             return JsonResponse({'status': 'success'})
-#         except Exception as e:
-#             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-#     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-
-# @firebase_login_required
-# def add_video(request):
-#     if request.method == 'POST':
-#         title = request.POST.get('title')
-#         video_file = request.FILES.get('video_file')
-#         words = request.POST.getlist('words')
-
-#         try:
-#             bucket = storage.bucket()
-#             file_path = f'sign_videos/{video_file.name}'
-#             blob = bucket.blob(file_path)
-#             blob.upload_from_file(video_file)
-#             video_url = blob.public_url
-
-#             video = SignLanguageVideo.collection.create(
-#                 title=title,
-#                 video_file=video_url,
-#                 video_path=file_path
-#             )
-
-#             for word in words:
-#                 if word:
-#                     VideoWord.collection.create(
-#                         video=video.key,
-#                         word=word.lower()
-#                     )
-            
-#             messages.success(request, f'Video "{title}" added successfully!')
-#             return redirect('admin-dashboard')
-#         except Exception as e:
-#             messages.error(request, f'Error adding video: {e}')
-#             return redirect('add_video')
-
-#     return render(request, 'add_video.html')
 
 @firebase_login_required
 def edit_video(request, video_id):
@@ -797,33 +733,6 @@ def user_management(request):
     
     return render(request, 'user_management.html', {'users': users})
 
-# @firebase_login_required
-# def add_user(request):
-#     if request.method == 'POST':
-#         email = request.POST.get('email')
-#         password = request.POST.get('password')
-#         username = request.POST.get('username')
-#         try:
-#             user = auth.create_user(email=email, password=password, display_name=username)
-#             User.collection.create(id=user.uid, email=email, username=username)
-#             messages.success(request, f"User {username} created successfully")
-#         except Exception as e:
-#             messages.error(request, f"Error creating user: {str(e)}")
-#     return redirect('user-management')
-
-# @firebase_login_required
-# def edit_user(request, user_id):
-#     if request.method == 'POST':
-#         try:
-#             auth.update_user(user_id, email=request.POST.get('email'), display_name=request.POST.get('username'))
-#             user = User.collection.get(f'users/{user_id}')
-#             user.email = request.POST.get('email')
-#             user.username = request.POST.get('username')
-#             user.save()
-#             messages.success(request, f"User {user.username} updated successfully")
-#         except Exception as e:
-#             messages.error(request, f"Error updating user: {str(e)}")
-#     return redirect('user-management')
 
 from django.http import JsonResponse
 from firebase_admin import auth as firebase_auth
@@ -1241,20 +1150,39 @@ def get_sentencehistory(request):
     return JsonResponse(history, safe=False)
 
 
+_sign_predictor_instance = None
+_word_predictor_instance = None
 
+def get_sign_predictor():
+    """Lazy loader for SignPredictor (Character Detection)"""
+    global _sign_predictor_instance
+    if _sign_predictor_instance is None:
+        print("⏳ Loading SignPredictor model into memory...")
+        _sign_predictor_instance = SignPredictor()
+        print("✅ SignPredictor model loaded successfully.")
+    return _sign_predictor_instance
 
-predictor = SignPredictor()
+def get_word_predictor():
+    """Lazy loader for WordPredictor (Word Detection)"""
+    global _word_predictor_instance
+    if _word_predictor_instance is None:
+        print("⏳ Loading WordPredictor model into memory...")
+        _word_predictor_instance = WordPredictor()
+        print("✅ WordPredictor model loaded successfully.")
+    return _word_predictor_instance
+
 
 def sign(request):
     return render(request, 'fsltotext.html')
 
 def predict(request):
+    predictor = get_sign_predictor() # Load model ONLY when needed
+    
     # 1. Handle Image Upload (POST)
-    # The frontend now sends a snapshot of the video frame here
     if request.method == "POST":
         image_data = request.POST.get('image')
         if image_data:
-            # Send the base64 image to predictor.py for processing
+            # Send the base64 image to predictor.py
             data = predictor.process_web_frame(image_data) 
             return JsonResponse(data)
 
@@ -1272,10 +1200,15 @@ def predict(request):
 
 @csrf_exempt
 def apply_suggestion(request):
-    data = json.loads(request.body)
-    new_sentence = data.get("sentence", "")
-    predictor.apply_suggestion(new_sentence)
-    return JsonResponse({"success": True})
+    predictor = get_sign_predictor() # Load model ONLY when needed
+    
+    try:
+        data = json.loads(request.body)
+        new_sentence = data.get("sentence", "")
+        predictor.apply_suggestion(new_sentence)
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
 
 @firebase_login_required
 def detection_page(request):
@@ -1299,7 +1232,7 @@ def translate_phrase(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 # Initialize the predictor
-word_predictor = WordPredictor()
+# word_predictor = WordPredictor()
 
 # Unused helper (Video feed is now client-side)
 active_video_feeds = {}
@@ -1307,35 +1240,34 @@ active_video_feeds = {}
 @csrf_exempt
 @require_http_methods(["POST"])
 def release_camera(request):
-    # Release resources (reset state)
-    # predictor.release() # Uncomment if you have the other predictor here
-    word_predictor.release()
+    # Only access the predictor if it was already loaded
+    global _word_predictor_instance
+    if _word_predictor_instance:
+        _word_predictor_instance.release()
     return JsonResponse({'status': 'camera_released'})
-
-# --- DELETED: v_feed ---
-# We no longer use StreamingHttpResponse because the browser 
-# handles the video feed directly via the <video> tag.
 
 @csrf_exempt
 def get_prediction(request):
     """
     Handles both receiving frames (POST) and checking status (GET).
+    Uses Lazy Loading for WordPredictor.
     """
+    word_predictor = get_word_predictor() # Load model ONLY when needed
+
     # 1. Handle Image Upload (POST)
     if request.method == "POST":
         image_data = request.POST.get('image')
         if image_data:
-            # Send the base64 image to utils.py for processing
             data = word_predictor.process_web_frame(image_data)
             return JsonResponse(data)
 
     # 2. Handle Status Check (GET)
-    # Returns the latest prediction state
     return JsonResponse(word_predictor.get_status())
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def reset_prediction(request):
+    word_predictor = get_word_predictor() # Load model ONLY when needed
     word_predictor.reset()
     return JsonResponse({'status': 'reset'})
 
