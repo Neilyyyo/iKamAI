@@ -480,9 +480,24 @@ def logout_view(request):
 def start_page(request):
     return render(request, 'start_page.html')
 
+from dotenv import load_dotenv
+load_dotenv()
+
 @firebase_login_required
 def account_view(request):
-    return render(request, 'account.html')
+    # 2. Get the specific keys needed for the frontend SDK
+    context = {
+        'api_key': os.getenv('VITE_FIREBASE_API_KEY'),
+        'auth_domain': os.getenv('VITE_FIREBASE_AUTH_DOMAIN'),
+        'project_id': os.getenv('VITE_FIREBASE_PROJECT_ID'),
+        'storage_bucket': os.getenv('VITE_FIREBASE_STORAGE_BUCKET'),
+        'messaging_sender_id': os.getenv('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+        'app_id': os.getenv('VITE_FIREBASE_APP_ID'),
+        'measurement_id': os.getenv('VITE_FIREBASE_MEASUREMENT_ID'),
+    }
+    
+    # 3. Pass 'context' to the template
+    return render(request, 'account.html', context)
 
 @firebase_login_required
 def edit_account(request):
@@ -1233,11 +1248,17 @@ predictor = SignPredictor()
 def sign(request):
     return render(request, 'fsltotext.html')
 
-def video_feed(request):
-    return StreamingHttpResponse(predictor.generate_frames(),
-                                 content_type='multipart/x-mixed-replace; boundary=frame')
-
 def predict(request):
+    # 1. Handle Image Upload (POST)
+    # The frontend now sends a snapshot of the video frame here
+    if request.method == "POST":
+        image_data = request.POST.get('image')
+        if image_data:
+            # Send the base64 image to predictor.py for processing
+            data = predictor.process_web_frame(image_data) 
+            return JsonResponse(data)
+
+    # 2. Handle Clear Command (GET)
     if request.GET.get("clear") == "true":
         predictor.clear_fun()
         return JsonResponse({
@@ -1246,6 +1267,7 @@ def predict(request):
             'suggestions': ['', '', '', '']
         })
 
+    # 3. Default GET (Status check)
     return JsonResponse(predictor.get_status())
 
 @csrf_exempt
@@ -1276,31 +1298,39 @@ def translate_phrase(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-active_video_feeds = {}
+# Initialize the predictor
+word_predictor = WordPredictor()
 
-def get_video_feed():
-    """Get or create video feed for the current thread"""
-    thread_id = threading.get_ident()
-    return thread_id
+# Unused helper (Video feed is now client-side)
+active_video_feeds = {}
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def release_camera(request):
-    predictor.release()
+    # Release resources (reset state)
+    # predictor.release() # Uncomment if you have the other predictor here
     word_predictor.release()
     return JsonResponse({'status': 'camera_released'})
 
-word_predictor = WordPredictor()
-
-@gzip.gzip_page
-def v_feed(request):
-    return StreamingHttpResponse(word_predictor.generate_frames(),
-                                 content_type='multipart/x-mixed-replace; boundary=frame')
-                                 
+# --- DELETED: v_feed ---
+# We no longer use StreamingHttpResponse because the browser 
+# handles the video feed directly via the <video> tag.
 
 @csrf_exempt
-@require_http_methods(["GET"])
 def get_prediction(request):
+    """
+    Handles both receiving frames (POST) and checking status (GET).
+    """
+    # 1. Handle Image Upload (POST)
+    if request.method == "POST":
+        image_data = request.POST.get('image')
+        if image_data:
+            # Send the base64 image to utils.py for processing
+            data = word_predictor.process_web_frame(image_data)
+            return JsonResponse(data)
+
+    # 2. Handle Status Check (GET)
+    # Returns the latest prediction state
     return JsonResponse(word_predictor.get_status())
 
 @csrf_exempt

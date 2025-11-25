@@ -55,12 +55,12 @@ urlpatterns = [
 
     # Prediction
     path('sign/', views.sign, name='sign'), 
-    path('video_feed/', views.video_feed, name='video_feed'),
+    # path('video_feed/', views.video_feed, name='video_feed'),
     path('predict/', views.predict, name='predict'),
     path('apply-suggestion/', views.apply_suggestion, name='apply_suggestion'),
     path('index/', views.detection_page, name='detection_page'),
     path('release_camera/', views.release_camera, name='release_camera'),
-    path('v_feed/', views.v_feed, name='v_feed'),
+    # path('v_feed/', views.v_feed, name='v_feed'),
     path("get_prediction/", views.get_prediction, name="get_prediction"),
     path('reset_prediction/', views.reset_prediction, name='reset_prediction'),
 

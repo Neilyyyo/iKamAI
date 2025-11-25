@@ -444,6 +444,33 @@
             justify-content: flex-end;
         }
 
+        #canvasElement {
+            display: none;
+        }
+
+        .camera-feed {
+        width: 100%;
+        max-width: 640px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin: 0 auto 1.5rem;
+    }
+
+    /* ... other styles ... */
+    
+    #videoElement {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+    }
+
+    /* --- ADD THIS HERE --- */
+    #canvasElement {
+        display: none;
+    }
+
         /* Animations */
         @keyframes fadeIn {
             from {
@@ -589,7 +616,8 @@
                         Camera Feed
                     </h2>
                     <div class="camera-feed">
-                        <img src="{% url 'v_feed' %}" width="640" height="480" id="video-feed" />
+                        <video id="videoElement" autoplay playsinline muted></video>
+                        <canvas id="canvasElement"></canvas>
                     </div>
                 </section>
 
@@ -720,12 +748,19 @@
     </div>
 
     <script>
-        // Global variables
+      // Global variables
         let cameraActive = true;
         let predictionInterval;
         let historyCount = 0;
         let lastPrediction = "None";
-        const videoFeedElement = document.getElementById('video-feed');
+        let stablePrediction = null;
+        let stableCount = 0;
+        const requiredStability = 3; 
+
+        // Video and Canvas
+        const video = document.getElementById('videoElement');
+        const canvas = document.getElementById('canvasElement');
+        const context = canvas.getContext('2d');
 
         // DOM Elements
         const instructionModal = document.getElementById('instruction-modal');
@@ -735,165 +770,173 @@
         const statusDot = document.getElementById('status-dot');
         const recentCount = document.getElementById('recent-count');
 
-        // Show instruction modal on page load
+        // Initialize
         window.addEventListener('DOMContentLoaded', () => {
             instructionModal.style.display = 'flex';
         });
 
-        // Modal handlers
-        closeModal.addEventListener('click', () => {
-            instructionModal.style.display = 'none';
-        });
-
         startBtn.addEventListener('click', () => {
             instructionModal.style.display = 'none';
-            // Start prediction updates when user begins
-            predictionInterval = setInterval(updatePrediction, 1000);
+            startCamera();
         });
 
-        document.getElementById("help-btn").addEventListener("click", function () {
-            instructionModal.style.display = "flex";
-        });
+        closeModal.addEventListener('click', () => { instructionModal.style.display = 'none'; });
+        document.getElementById("help-btn").addEventListener("click", () => { instructionModal.style.display = "flex"; });
 
-        // Track consistency
-        let stablePrediction = null;
-        let stableCount = 0;
-        const requiredStability = 3; // number of intervals (3s if interval = 1000ms)
-
-        function updatePrediction() {
-            if (cameraActive) {
-                fetch('/get_prediction/')
-                    .then(response => response.json())
-                    .then(data => {
-                        const accuracy = data.accuracy || '0%';
-                        const accuracyValue = parseFloat(accuracy) || 0;
-
-                        if (data.prediction && data.prediction !== 'None') {
-                            if (data.prediction === stablePrediction) {
-                                stableCount++;
-                            } else {
-                                stablePrediction = data.prediction;
-                                stableCount = 1;
-                            }
-
-                            // Only accept if stable for N cycles
-                            if (stableCount >= requiredStability && data.prediction !== lastPrediction) {
-                                document.getElementById('current-prediction').textContent = data.prediction;
-                                document.getElementById('current-accuracy').textContent = accuracy;
-
-                                if (!isNaN(accuracyValue)) {
-                                    document.getElementById('accuracy-fill').style.width = accuracyValue + '%';
-                                }
-
-                                addToHistory(data.prediction, accuracy);
-                                historyCount++;
-                                recentCount.textContent = historyCount;
-                                lastPrediction = data.prediction;
-                            }
-                        } else {
-                            // Reset when None
-                            stablePrediction = null;
-                            stableCount = 0;
-                            if (lastPrediction !== 'None') {
-                                document.getElementById('current-prediction').textContent = 'None';
-                                document.getElementById('current-accuracy').textContent = '0%';
-                                document.getElementById('accuracy-fill').style.width = '0%';
-                                lastPrediction = 'None';
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching prediction:', error);
-                    });
-            }
-        }
-
-
-        // Function to reset prediction
-        function resetPrediction() {
-            fetch('/reset_prediction/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'reset') {
-                        document.getElementById('current-prediction').textContent = 'None';
-                        document.getElementById('current-accuracy').textContent = '0%';
-                        document.getElementById('accuracy-fill').style.width = '0%';
-                        lastPrediction = 'None';
-                    }
+        // --- CAMERA FUNCTIONS ---
+        function startCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480, facingMode: "user" } 
                 })
-                .catch(error => {
-                    console.error('Error resetting prediction:', error);
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.onloadedmetadata = function(e) {
+                        video.play();
+                        cameraActive = true;
+                        updateUI(true);
+                        // Loop to send frames to backend
+                        predictionInterval = setInterval(processFrame, 500); // 2 FPS roughly
+                    };
+                })
+                .catch(function(err) {
+                    console.error("Camera Error:", err);
+                    updateUI(false);
                 });
-        }
-
-        // Function to toggle camera
-        function toggleCamera() {
-            if (cameraActive) {
-                // Stop the camera
-                cameraActive = false;
-
-                // Clear the prediction interval
-                if (predictionInterval) {
-                    clearInterval(predictionInterval);
-                }
-
-                // Stop the video feed
-                videoFeedElement.src = '';
-
-                // Update button text and icon
-                cameraToggleBtn.innerHTML = '<i class="fas fa-video-slash"></i> Start Camera';
-                cameraToggleBtn.classList.remove('btn-danger');
-                cameraToggleBtn.classList.add('btn-primary');
-
-                // Update status
-                document.getElementById('camera-status').textContent = 'Camera status: Inactive';
-                statusDot.classList.remove('status-active');
-                statusDot.classList.add('status-inactive');
-
-                // Send request to release camera
-                releaseCamera();
-            } else {
-                // Start the camera
-                cameraActive = true;
-
-                // Restart the video feed
-                videoFeedElement.src = "{% url 'v_feed' %}";
-
-                // Restart prediction interval
-                predictionInterval = setInterval(updatePrediction, 1000);
-
-                // Update button text and icon
-                cameraToggleBtn.innerHTML = '<i class="fas fa-video"></i> Stop Camera';
-                cameraToggleBtn.classList.remove('btn-primary');
-                cameraToggleBtn.classList.add('btn-danger');
-
-                // Update status
-                document.getElementById('camera-status').textContent = 'Camera status: Active';
-                statusDot.classList.remove('status-inactive');
-                statusDot.classList.add('status-active');
             }
         }
 
-        // Function to release camera
-        function releaseCamera() {
-            fetch('/release_camera/', {
-                method: 'POST',
+        function stopCamera() {
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            cameraActive = false;
+            if (predictionInterval) clearInterval(predictionInterval);
+            updateUI(false);
+        }
+
+        function toggleCamera() {
+            if (cameraActive) stopCamera();
+            else startCamera();
+        }
+
+        function updateUI(active) {
+            if (active) {
+                cameraToggleBtn.innerHTML = '<i class="fas fa-video-slash"></i> Stop Camera';
+                cameraToggleBtn.classList.replace('btn-primary', 'btn-danger');
+                document.getElementById('camera-status').textContent = 'Camera status: Active';
+                statusDot.classList.replace('status-inactive', 'status-active');
+            } else {
+                cameraToggleBtn.innerHTML = '<i class="fas fa-video"></i> Start Camera';
+                cameraToggleBtn.classList.replace('btn-danger', 'btn-primary');
+                document.getElementById('camera-status').textContent = 'Camera status: Inactive';
+                statusDot.classList.replace('status-active', 'status-inactive');
+            }
+        }
+
+        // --- PROCESSING & PREDICTION ---
+        function processFrame() {
+            if (!cameraActive) return;
+
+            // Draw current video frame to canvas
+            canvas.width = 640;
+            canvas.height = 480;
+            context.drawImage(video, 0, 0, 640, 480);
+            
+            // Convert to Base64
+            const dataURL = canvas.toDataURL('image/jpeg', 0.6); // 0.6 quality compression
+
+            // Send to Backend
+            // NOTE: Ensure your views.py maps 'get_prediction' to handle POST requests with images
+            // Or create a new URL for this. Here I assume we use a unified endpoint or specific one.
+            fetch('/get_prediction/', { 
+                method: "POST",
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": getCookie('csrftoken')
+                },
+                body: "image=" + encodeURIComponent(dataURL)
+            })
+            .then(res => res.json())
+            .then(data => {
+                handlePredictionData(data);
+            })
+            .catch(err => console.error("Error:", err));
+        }
+
+        function handlePredictionData(data) {
+            const accuracy = data.accuracy || '0%';
+            const accuracyValue = parseFloat(accuracy) || 0;
+
+            if (data.prediction && data.prediction !== 'None') {
+                if (data.prediction === stablePrediction) {
+                    stableCount++;
+                } else {
+                    stablePrediction = data.prediction;
+                    stableCount = 1;
                 }
-            }).catch(error => {
-                console.error('Camera release request failed:', error);
+
+                // Stability check
+                if (stableCount >= requiredStability && data.prediction !== lastPrediction) {
+                    document.getElementById('current-prediction').textContent = data.prediction;
+                    document.getElementById('current-accuracy').textContent = accuracy;
+                    if (!isNaN(accuracyValue)) {
+                        document.getElementById('accuracy-fill').style.width = accuracyValue + '%';
+                    }
+                    addToHistory(data.prediction, accuracy);
+                    historyCount++;
+                    recentCount.textContent = historyCount;
+                    lastPrediction = data.prediction;
+                }
+            } else {
+                // Reset/None logic
+                stablePrediction = null;
+                stableCount = 0;
+            }
+        }
+
+        function addToHistory(prediction, accuracy) {
+            const historyList = document.getElementById('history-list');
+            if (historyList.children.length === 1 && historyList.children[0].querySelector('.history-text').textContent === 'No history yet') {
+                historyList.innerHTML = '';
+            }
+            const timeString = new Date().toLocaleTimeString();
+            const historyItem = document.createElement('li');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `<span class="history-text">${prediction} (${accuracy})</span><span class="history-time">${timeString}</span>`;
+            historyList.prepend(historyItem);
+            if (historyList.children.length > 15) historyList.removeChild(historyList.lastChild);
+            
+            // Save to DB
+            fetch('/save_translation_words/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: prediction })
             });
         }
 
-        // Helper function to get CSRF token
+        function resetPrediction() {
+            fetch('/reset_prediction/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
+            }).then(res => res.json()).then(data => {
+                document.getElementById('current-prediction').textContent = 'None';
+                document.getElementById('accuracy-fill').style.width = '0%';
+                lastPrediction = 'None';
+            });
+        }
+
+        function speakText() {
+            const prediction = document.getElementById('current-prediction').textContent;
+            if (prediction && prediction !== 'None') {
+                const utterance = new SpeechSynthesisUtterance(prediction);
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Helpers & Events
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -909,80 +952,9 @@
             return cookieValue;
         }
 
-        // Text-to-speech function
-        function speakText() {
-            const prediction = document.getElementById('current-prediction').textContent;
-            if (prediction && prediction !== 'None') {
-                const utterance = new SpeechSynthesisUtterance(prediction);
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert("No prediction to speak");
-            }
-        }
-
-        function addToHistory(prediction, accuracy) {
-            const historyList = document.getElementById('history-list');
-
-            // Remove placeholder if it exists
-            if (historyList.children.length === 1 &&
-                historyList.children[0].querySelector('.history-text').textContent === 'No history yet') {
-                historyList.innerHTML = '';
-            }
-
-            const now = new Date();
-            const timeString = now.toLocaleTimeString();
-
-            const historyItem = document.createElement('li');
-            historyItem.className = 'history-item';
-            historyItem.innerHTML = `
-        <span class="history-text">${prediction} (${accuracy})</span>
-        <span class="history-time">${timeString}</span>
-    `;
-
-            // Add to top of list
-            historyList.prepend(historyItem);
-
-            // Limit history to 15 items
-            if (historyList.children.length > 15) {
-                historyList.removeChild(historyList.lastChild);
-            }
-
-            // 🔥 Save to backend (only if valid)
-            if (prediction && prediction !== "None") {
-                fetch('/save_translation_words/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: prediction
-                    })
-                }).then(res => res.json())
-                    .then(data => console.log("Saved to DB:", data))
-                    .catch(err => console.error("Error saving translation:", err));
-            }
-        }
-
-
-        // Event listeners for buttons
         document.getElementById("reset-btn").addEventListener("click", resetPrediction);
         document.getElementById("speak-btn").addEventListener("click", speakText);
         cameraToggleBtn.addEventListener("click", toggleCamera);
-
-        // Release camera when page is unloaded
-        // Release camera when page is unloaded (fetch-based)
-        window.addEventListener('beforeunload', function () {
-            if (cameraActive) {
-                releaseCamera();
-            }
-        });
-
-        // Extra safety: use navigator.sendBeacon to ensure release on abrupt unload
-        window.addEventListener("beforeunload", function () {
-            const data = new Blob([], { type: "application/json" });
-            navigator.sendBeacon("/release_camera/", data);
-        });
     </script>
 </body>
 

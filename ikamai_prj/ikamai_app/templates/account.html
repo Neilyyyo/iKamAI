@@ -663,16 +663,15 @@
         } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
         // 🔹 Your Firebase project config
-        const firebaseConfig = {
-            apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-            authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-            databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-            projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-            storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-            appId: import.meta.env.VITE_FIREBASE_APP_ID,
-            measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-        };
+const firebaseConfig = {
+  apiKey: "{{ api_key }}", // ✅ NEW (Uses data from views.py)
+  authDomain: "{{ auth_domain }}",
+  projectId: "{{ project_id }}",
+  storageBucket: "{{ storage_bucket }}",
+  messagingSenderId: "{{ messaging_sender_id }}",
+  appId: "{{ app_id }}",
+  measurementId: "{{ measurement_id }}"
+};
 
 
         // 🔹 Initialize Firebase

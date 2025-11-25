@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG") == "True"  # Fixed: should be "True" not "False"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "ikamai.onrender.com, localhost, 127.0.0.1").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "ikamai.onrender.com,localhost,127.0.0.1").split(",")
 
 # Application definition
 INSTALLED_APPS = [
