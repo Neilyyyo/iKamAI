@@ -1467,7 +1467,103 @@ def upload_video_view(request):
     # Render the page again (GET or POST)
     return render(request, "add_video.html", context)
 
+#save alphabet picture
+# views.py (Add these imports if missing)
+from firebase_admin import storage
+import os
 
+@firebase_login_required
+def add_alphabet_view(request):
+    """
+    1. Uploads image to Firebase Storage Bucket
+    2. Saves the Public URL + Letter to Firestore
+    """
+    if request.method == "POST":
+        letter = request.POST.get("letter")
+        image_file = request.FILES.get("image")
+
+        if not letter or not image_file:
+            messages.error(request, "Please select both a letter and an image.")
+            return render(request, "add_alphabet.html")
+
+        try:
+            # 1. Get the Bucket
+            # We explicitly pass the bucket name from settings
+            bucket = storage.bucket(name=settings.FIREBASE_STORAGE_BUCKET)
+
+            # 2. Create a reference (Blob) in the 'alphabet' folder
+            # We rename the file to "A.png" or "B.jpg" to keep it clean
+            extension = os.path.splitext(image_file.name)[1] 
+            blob_path = f"alphabet/{letter}{extension}"
+            blob = bucket.blob(blob_path)
+
+            # 3. Upload the file
+            blob.upload_from_file(image_file, content_type=image_file.content_type)
+
+            # 4. Make it public so the frontend can display it
+            blob.make_public()
+            public_url = blob.public_url
+
+            # 5. Save Metadata to Firestore
+            data = {
+                "letter": letter,
+                "image_url": public_url,
+                "storage_path": blob_path, # Saved in case we need to delete it later
+                "updated_at": firestore.SERVER_TIMESTAMP
+            }
+            
+            # Using .document(letter) ensures we overwrite if we update "A" again
+            db.collection("alphabet").document(letter).set(data)
+
+            messages.success(request, f"Successfully saved sign for letter '{letter}'!")
+
+        except Exception as e:
+            messages.error(request, f"Upload failed: {str(e)}")
+
+    return render(request, "add_alphabet.html")
+
+
+@csrf_exempt
+def get_available_signs(request):
+    """
+    API to fetch the Alphabet images + Word list for the frontend dictionary
+    """
+    try:
+        # A. Get Alphabet from Firestore
+        alphabet_ref = db.collection('alphabet').stream()
+        alphabet_data = []
+
+        for doc in alphabet_ref:
+            data = doc.to_dict()
+            alphabet_data.append({
+                "letter": data.get("letter"),
+                "image": data.get("image_url") # The bucket URL we just saved
+            })
+        
+        # Sort alphabetically
+        alphabet_data.sort(key=lambda x: x['letter'])
+
+        # Fallback: If DB is empty, show letters without images
+        if not alphabet_data:
+            alphabet_data = [{"letter": c, "image": None} for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
+        # B. Get Words (from Video Titles)
+        videos_ref = db.collection('videos').stream()
+        db_words = set()
+        for doc in videos_ref:
+            title = doc.to_dict().get('title', '').strip().upper()
+            if title:
+                db_words.add(title)
+
+        return JsonResponse({
+            'status': 'success',
+            'alphabet': alphabet_data,
+            'words': sorted(list(db_words))
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
 from google.cloud import firestore
 from django.shortcuts import render, redirect
 from firebase_admin import firestore, auth as firebase_auth

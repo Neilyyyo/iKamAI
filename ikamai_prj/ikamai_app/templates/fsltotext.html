@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
- <style>
+    <style>
         :root {
             --primary: #30D5C8;
             --primary-dark: #2DAA9E;
@@ -490,6 +490,124 @@
             font-size: 1.2rem;
         }
 
+        .header-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            /* Pill shape */
+            transition: var(--transition);
+            background-color: rgba(48, 213, 200, 0.1);
+            /* Light turquoise bg */
+            border: 1px solid transparent;
+        }
+
+        .header-back-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateX(-5px);
+            /* Slight slide to the left effect */
+            box-shadow: 0 4px 10px rgba(48, 213, 200, 0.3);
+        }
+
+        .header-back-btn i {
+            font-size: 0.9rem;
+        }
+
+        /* Dictionary Styles */
+        .modal-body-scroll {
+            max-height: 65vh;
+            overflow-y: auto;
+            padding-right: 10px;
+            /* Space for scrollbar */
+        }
+
+        /* 1. Large Alphabet Chart Style */
+        .alphabet-chart-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .alphabet-chart-img {
+            width: 100%;
+            height: auto;
+            max-width: 600px;
+            /* Keeps it from getting too huge */
+            border-radius: 8px;
+        }
+
+        /* 2. Special Signs Grid (3 columns) */
+        .special-signs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            /* Exactly 3 columns */
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .dict-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dict-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 15px rgba(48, 213, 200, 0.15);
+        }
+
+        .dict-item img {
+            width: 100%;
+            max-width: 80px;
+            /* Smaller icons for special keys */
+            height: auto;
+            margin-bottom: 0.5rem;
+        }
+
+        .dict-item span {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        /* Section Headers */
+        .dict-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Mobile check */
+        @media (max-width: 600px) {
+            .special-signs-grid {
+                grid-template-columns: 1fr;
+                /* Stack them on small phones */
+            }
+        }
+
         .modal-footer {
             display: flex;
             justify-content: flex-end;
@@ -500,30 +618,35 @@
             position: relative;
             width: 100%;
             /* This forces the box to keep a standard webcam shape */
-            aspect-ratio: 4 / 3; 
-            max-height: 480px; /* Prevents it from getting too huge on large screens */
+            aspect-ratio: 4 / 3;
+            max-height: 480px;
+            /* Prevents it from getting too huge on large screens */
             background: #000;
             border-radius: 12px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto; /* Centers the camera in the card */
+            margin: 0 auto;
+            /* Centers the camera in the card */
         }
 
         #videoElement {
             width: 100%;
             height: 100%;
             /* 'contain' ensures the whole video is seen without cropping */
-            object-fit: contain; 
-            transform: scaleX(-1); /* Mirror effect for natural feel */
+            object-fit: contain;
+            transform: scaleX(-1);
+            /* Mirror effect for natural feel */
         }
 
         /* Status Overlay */
         .camera-status {
             position: absolute;
-            bottom: 1rem; /* CHANGED: Moves it to the bottom */
-            left: 1rem;   /* Keeps it on the left */
+            bottom: 1rem;
+            /* CHANGED: Moves it to the bottom */
+            left: 1rem;
+            /* Keeps it on the left */
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px);
             color: white;
@@ -533,12 +656,14 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            z-index: 10; /* Ensures it sits on top of the video */
+            z-index: 10;
+            /* Ensures it sits on top of the video */
         }
 
         #canvasElement {
             display: none;
         }
+
         /* Animations */
         @keyframes spin {
             to {
@@ -643,6 +768,10 @@
             <img src="{% static 'logo.png' %}" alt="KUMPAS Logo">
         </a>
         <div class="header-right">
+            <div class="nav-icon" id="dict-btn" title="Sign Dictionary">
+                <i class="fas fa-book"></i>
+            </div>
+
             <div class="nav-icon" id="help-btn">
                 <i class="fas fa-question-circle"></i>
             </div>
@@ -655,306 +784,415 @@
             <p>Real-time translation from sign language to text</p>
         </div>
 
-     <div class="card-grid">
-    <div class="card">
-        <div class="card-header">
-            <h2><i class="fas fa-video"></i> Live Camera Feed</h2>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-video"></i> Live Camera Feed</h2>
+                </div>
+                <div class="card-content">
+                    <div class="camera-container">
+                        <video id="videoElement" autoplay playsinline></video>
+                        <canvas id="canvasElement"></canvas>
+
+                        <div class="camera-status">
+                            <div class="status-indicator" id="status-indicator"></div>
+                            <span id="status-text">Camera Active</span>
+                        </div>
+                    </div>
+
+                    <div class="input-grid" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label for="char-output"><i class="fas fa-font"></i> Character</label>
+                            <input type="text" id="char-output" class="form-input" placeholder="-" readonly
+                                style="text-align: center; font-weight: bold;">
+                        </div>
+                        <div class="form-group">
+                            <label for="sentence-output"><i class="fas fa-text-height"></i> Sentence</label>
+                            <input type="text" id="sentence-output" class="form-input" placeholder="Full sentence..."
+                                readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-lightbulb"></i> Suggestions</label>
+                        <div class="suggestions-grid" id="suggestions">
+                            <div class="suggestion-btn" onclick="applySuggestion(0)">—</div>
+                            <div class="suggestion-btn" onclick="applySuggestion(1)">—</div>
+                            <div class="suggestion-btn" onclick="applySuggestion(2)">—</div>
+                            <div class="suggestion-btn" onclick="applySuggestion(3)">—</div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" id="clear-btn"><i class="fas fa-eraser"></i> Clear</button>
+                        <button class="btn btn-success" id="speak-btn"><i class="fas fa-volume-up"></i> Speak</button>
+                        <button class="btn btn-danger" id="stop-camera-btn"><i class="fas fa-video-slash"></i> Stop
+                            Camera</button>
+                        <a href="{% url 'detection_page' %}" class="btn btn-primary"><i class="fas fa-upload"></i>
+                            Translate ASL Words</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card history-panel">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Translation History</h2>
+                </div>
+                <div class="card-content">
+                    <div class="history-list" id="history-list">
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-content">
-            <div class="camera-container">
-                <video id="videoElement" autoplay playsinline></video>
-                <canvas id="canvasElement"></canvas>
-                
-                <div class="camera-status">
-                    <div class="status-indicator" id="status-indicator"></div>
-                    <span id="status-text">Camera Active</span>
-                </div>
-            </div>
-
-            <div class="input-grid" style="margin-top: 20px;">
-                <div class="form-group">
-                    <label for="char-output"><i class="fas fa-font"></i> Character</label>
-                    <input type="text" id="char-output" class="form-input" placeholder="-" readonly style="text-align: center; font-weight: bold;">
-                </div>
-                <div class="form-group">
-                    <label for="sentence-output"><i class="fas fa-text-height"></i> Sentence</label>
-                    <input type="text" id="sentence-output" class="form-input" placeholder="Full sentence..." readonly>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-lightbulb"></i> Suggestions</label>
-                <div class="suggestions-grid" id="suggestions">
-                    <div class="suggestion-btn" onclick="applySuggestion(0)">—</div>
-                    <div class="suggestion-btn" onclick="applySuggestion(1)">—</div>
-                    <div class="suggestion-btn" onclick="applySuggestion(2)">—</div>
-                    <div class="suggestion-btn" onclick="applySuggestion(3)">—</div>
-                </div>
-            </div>
-
-            <div class="btn-group">
-                <button class="btn btn-secondary" id="clear-btn"><i class="fas fa-eraser"></i> Clear</button>
-                <button class="btn btn-success" id="speak-btn"><i class="fas fa-volume-up"></i> Speak</button>
-                <button class="btn btn-danger" id="stop-camera-btn"><i class="fas fa-video-slash"></i> Stop Camera</button>
-                <a href="{% url 'detection_page' %}" class="btn btn-primary"><i class="fas fa-upload"></i> Translate ASL Words</a>
-            </div>
+<div class="modal" id="instructionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <i class="fas fa-info-circle"></i> How to Use
         </div>
-    </div>
 
-      <div class="card history-panel">
-        <div class="card-header">
-            <h2><i class="fas fa-history"></i> Translation History</h2>
-        </div>
-        <div class="card-content">
-            <div class="history-list" id="history-list">
-                </div>
+        <ul class="instruction-list">
+            <li>
+                <div class="instruction-icon"><i class="fas fa-hand-pointer"></i></div>
+                <div>Place your hand in front of the camera</div>
+            </li>
+
+            <li>
+                <div class="instruction-icon"><i class="fas fa-lightbulb"></i></div>
+                <div>Ensure proper lighting for better accuracy</div>
+            </li>
+
+            <li>
+                <div class="instruction-icon"><i class="fas fa-text-height"></i></div>
+                <div>View the translated text in the input boxes</div>
+            </li>
+
+            <li>
+                <div class="instruction-icon"><i class="fas fa-history"></i></div>
+                <div>Check translation history in the right panel</div>
+            </li>
+
+            <!-- ✔ Added instruction about Dictionary -->
+            <li>
+                <div class="instruction-icon"><i class="fas fa-book"></i></div>
+                <div>View available hand signs and characters using the <strong>Dictionary</strong> button</div>
+            </li>
+        </ul>
+
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="proceedBtn">
+                <i class="fas fa-play"></i> Get Started
+            </button>
         </div>
     </div>
 </div>
 
-    <div class="modal" id="instructionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <i class="fas fa-info-circle"></i> How to Use
-            </div>
-            <ul class="instruction-list">
-                <li><div class="instruction-icon"><i class="fas fa-hand-pointer"></i></div><div>Place your hand in front of the camera</div></li>
-                <li><div class="instruction-icon"><i class="fas fa-lightbulb"></i></div><div>Ensure proper lighting for better accuracy</div></li>
-                <li><div class="instruction-icon"><i class="fas fa-text-height"></i></div><div>View the translated text in the input boxes</div></li>
-                <li><div class="instruction-icon"><i class="fas fa-history"></i></div><div>Check translation history in the right panel</div></li>
-            </ul>
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="proceedBtn">
-                    <i class="fas fa-play"></i> Get Started
-                </button>
+        <div class="modal" id="dictionaryModal">
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <div><i class="fas fa-book"></i> Sign Language Dictionary</div>
+                    <span class="close-modal" id="closeDictBtn"
+                        style="cursor: pointer; font-size: 1.5rem;">&times;</span>
+                </div>
+
+                <div class="modal-body-scroll">
+
+                    <div class="dict-section-title">
+                        <i class="fas fa-font"></i> Alphabet Chart (A-Z)
+                    </div>
+                    <div class="alphabet-chart-container">
+                        <img src="{% static 'alphabet.jpg' %}" alt="Full ASL Alphabet Chart"
+                            class="alphabet-chart-img">
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
+
+                    <div class="dict-section-title">
+                        <i class="fas fa-keyboard"></i> Special Commands
+                    </div>
+                    <div class="special-signs-grid">
+
+                        <div class="dict-item">
+                            <img src="{% static 'signs/backspace.png' %}" alt="Backspace Sign">
+                            <span>Backspace</span>
+                        </div>
+
+                        <div class="dict-item">
+                            <img src="{% static 'signs/next.png' %}" alt="Next Sign">
+                            <span>Next</span>
+                        </div>
+
+                        <div class="dict-item">
+                            <img src="{% static 'signs/space.png' %}" alt="Space Sign">
+                            <span>Space</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="closeDictFooterBtn">Close</button>
+                </div>
             </div>
         </div>
-    </div>
+        <script>
+            let cameraActive = true;
+            let predictionInterval;
+            const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('canvasElement');
+            const context = canvas.getContext('2d');
+            const width = 400; // Resize width for processing
+            const height = 400;
 
-    <script>
-        let cameraActive = true;
-        let predictionInterval;
-        const video = document.getElementById('videoElement');
-        const canvas = document.getElementById('canvasElement');
-        const context = canvas.getContext('2d');
-        const width = 400; // Resize width for processing
-        const height = 400;
+            // Initialize Camera
+            function startCamera() {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        cameraActive = true;
+                        updateUIState(true);
+                        startPredictionLoop();
+                    })
+                    .catch(function (err) {
+                        console.log("Something went wrong!", err);
+                        cameraActive = false;
+                        updateUIState(false);
+                    });
+            }
 
-        // Initialize Camera
-        function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                video.srcObject = stream;
-                cameraActive = true;
-                updateUIState(true);
-                startPredictionLoop();
-            })
-            .catch(function(err) {
-                console.log("Something went wrong!", err);
+            function stopCamera() {
+                if (video.srcObject) {
+                    const tracks = video.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null;
+                }
                 cameraActive = false;
                 updateUIState(false);
-            });
-        }
-
-        function stopCamera() {
-            if (video.srcObject) {
-                const tracks = video.srcObject.getTracks();
-                tracks.forEach(track => track.stop());
-                video.srcObject = null;
+                if (predictionInterval) clearInterval(predictionInterval);
             }
-            cameraActive = false;
-            updateUIState(false);
-            if (predictionInterval) clearInterval(predictionInterval);
-        }
 
-        function updateUIState(isActive) {
-            const btn = document.getElementById('stop-camera-btn');
-            const statusText = document.getElementById('status-text');
-            const indicator = document.getElementById('status-indicator');
+            function updateUIState(isActive) {
+                const btn = document.getElementById('stop-camera-btn');
+                const statusText = document.getElementById('status-text');
+                const indicator = document.getElementById('status-indicator');
 
-            if (isActive) {
-                btn.innerHTML = '<i class="fas fa-video-slash"></i> Stop Camera';
-                btn.className = 'btn btn-danger';
-                statusText.textContent = 'Camera Active';
-                indicator.className = 'status-indicator';
-            } else {
-                btn.innerHTML = '<i class="fas fa-video"></i> Start Camera';
-                btn.className = 'btn btn-success';
-                statusText.textContent = 'Camera Inactive';
-                indicator.className = 'status-indicator inactive';
-            }
-        }
-
-        function toggleCamera() {
-            if (cameraActive) {
-                stopCamera();
-            } else {
-                startCamera();
-            }
-        }
-
-        // Send Frame to Django
-        function processFrame() {
-            if (!cameraActive) return;
-
-            // Draw video frame to canvas
-            canvas.width = width;
-            canvas.height = height;
-            context.drawImage(video, 0, 0, width, height);
-
-            // Convert to base64
-            const dataURL = canvas.toDataURL('image/jpeg', 0.7);
-
-            // Send to Predict endpoint
-            fetch("{% url 'predict' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded", 
-                    "X-CSRFToken": getCookie('csrftoken')
-                },
-                body: "image=" + encodeURIComponent(dataURL)
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('char-output').value = data.character;
-                document.getElementById('sentence-output').value = data.sentence;
-                const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
-                suggestionButtons.forEach((btn, i) => {
-                    btn.textContent = data.suggestions[i] || "—";
-                });
-            })
-            .catch(err => console.error("Prediction Error:", err));
-        }
-
-        function startPredictionLoop() {
-            if (predictionInterval) clearInterval(predictionInterval);
-            predictionInterval = setInterval(processFrame, 500); // 500ms = 2 FPS
-        }
-
-        // --- Helper Functions ---
-
-        function applySuggestion(index) {
-            const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
-            const word = suggestionButtons[index].textContent;
-
-            if (word && word !== "—") {
-                let sentence = document.getElementById('sentence-output').value.trim();
-                const lastSpace = sentence.lastIndexOf(" ");
-                if (lastSpace >= 0) {
-                    sentence = sentence.substring(0, lastSpace + 1) + word.toUpperCase();
+                if (isActive) {
+                    btn.innerHTML = '<i class="fas fa-video-slash"></i> Stop Camera';
+                    btn.className = 'btn btn-danger';
+                    statusText.textContent = 'Camera Active';
+                    indicator.className = 'status-indicator';
                 } else {
-                    sentence = word.toUpperCase();
+                    btn.innerHTML = '<i class="fas fa-video"></i> Start Camera';
+                    btn.className = 'btn btn-success';
+                    statusText.textContent = 'Camera Inactive';
+                    indicator.className = 'status-indicator inactive';
                 }
-                document.getElementById('sentence-output').value = sentence;
+            }
 
-                fetch("{% url 'apply_suggestion' %}", {
+            function toggleCamera() {
+                if (cameraActive) {
+                    stopCamera();
+                } else {
+                    startCamera();
+                }
+            }
+
+            // Send Frame to Django
+            function processFrame() {
+                if (!cameraActive) return;
+
+                // Draw video frame to canvas
+                canvas.width = width;
+                canvas.height = height;
+                context.drawImage(video, 0, 0, width, height);
+
+                // Convert to base64
+                const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+
+                // Send to Predict endpoint
+                fetch("{% url 'predict' %}", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "X-CSRFToken": getCookie('csrftoken') },
-                    body: JSON.stringify({ sentence: sentence })
-                });
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    body: "image=" + encodeURIComponent(dataURL)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('char-output').value = data.character;
+                        document.getElementById('sentence-output').value = data.sentence;
+                        const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
+                        suggestionButtons.forEach((btn, i) => {
+                            btn.textContent = data.suggestions[i] || "—";
+                        });
+                    })
+                    .catch(err => console.error("Prediction Error:", err));
             }
-        }
 
-        document.getElementById("clear-btn").addEventListener("click", function () {
-            fetch("{% url 'predict' %}?clear=true") 
-                .then(() => {
-                    document.getElementById("sentence-output").value = "";
-                    document.getElementById("char-output").value = "";
-                    const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
-                    suggestionButtons.forEach(btn => btn.textContent = "—");
-                });
-        });
-
-        // --- UPDATED SPEECH SYNTHESIS LOGIC ---
-        document.getElementById("speak-btn").addEventListener("click", function () {
-            let textToSpeak = document.getElementById("sentence-output").value;
-            
-            if (textToSpeak.trim() !== "") {
-                // 1. Cancel current speech to prevent delays if clicked multiple times
-                window.speechSynthesis.cancel();
-
-                // 2. Create the utterance
-                let utterance = new SpeechSynthesisUtterance(textToSpeak);
-                
-                // 3. Optional: Configure the voice
-                utterance.lang = 'en-US'; // Force English
-                utterance.rate = 1;       // Normal Speed
-                utterance.pitch = 1;      // Normal Pitch
-
-                // 4. Speak
-                window.speechSynthesis.speak(utterance);
-                
-                // 5. Save to history (same as before)
-                saveToHistory(textToSpeak);
+            function startPredictionLoop() {
+                if (predictionInterval) clearInterval(predictionInterval);
+                predictionInterval = setInterval(processFrame, 500); // 500ms = 2 FPS
             }
-        });
-        // --------------------------------------
 
-        document.getElementById("stop-camera-btn").addEventListener("click", toggleCamera);
+            // --- Helper Functions ---
 
-        function addToHistory(text, timestamp) {
-            const historyList = document.getElementById('history-list');
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.innerHTML = `<div class="history-text">${text || "(No text)"}</div><div class="history-time">${timestamp || new Date().toLocaleTimeString()}</div>`;
-            historyList.prepend(historyItem);
-        }
+            function applySuggestion(index) {
+                const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
+                const word = suggestionButtons[index].textContent;
 
-        function saveToHistory(text) {
-            if (text.trim() === "") return;
-            const timestamp = new Date().toLocaleString();
-            addToHistory(text, timestamp);
-            fetch("/save_sentence/", {
-                method: "POST",
-                headers: { "X-CSRFToken": getCookie('csrftoken'), "Content-Type": "application/x-www-form-urlencoded" },
-                body: "sentencetext=" + encodeURIComponent(text)
+                if (word && word !== "—") {
+                    let sentence = document.getElementById('sentence-output').value.trim();
+                    const lastSpace = sentence.lastIndexOf(" ");
+                    if (lastSpace >= 0) {
+                        sentence = sentence.substring(0, lastSpace + 1) + word.toUpperCase();
+                    } else {
+                        sentence = word.toUpperCase();
+                    }
+                    document.getElementById('sentence-output').value = sentence;
+
+                    fetch("{% url 'apply_suggestion' %}", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "X-CSRFToken": getCookie('csrftoken') },
+                        body: JSON.stringify({ sentence: sentence })
+                    });
+                }
+            }
+
+            document.getElementById("clear-btn").addEventListener("click", function () {
+                fetch("{% url 'predict' %}?clear=true")
+                    .then(() => {
+                        document.getElementById("sentence-output").value = "";
+                        document.getElementById("char-output").value = "";
+                        const suggestionButtons = document.querySelectorAll('#suggestions .suggestion-btn');
+                        suggestionButtons.forEach(btn => btn.textContent = "—");
+                    });
             });
-        }
 
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+            // --- UPDATED SPEECH SYNTHESIS LOGIC ---
+            document.getElementById("speak-btn").addEventListener("click", function () {
+                let textToSpeak = document.getElementById("sentence-output").value;
+
+                if (textToSpeak.trim() !== "") {
+                    // 1. Cancel current speech to prevent delays if clicked multiple times
+                    window.speechSynthesis.cancel();
+
+                    // 2. Create the utterance
+                    let utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+                    // 3. Optional: Configure the voice
+                    utterance.lang = 'en-US'; // Force English
+                    utterance.rate = 1;       // Normal Speed
+                    utterance.pitch = 1;      // Normal Pitch
+
+                    // 4. Speak
+                    window.speechSynthesis.speak(utterance);
+
+                    // 5. Save to history (same as before)
+                    saveToHistory(textToSpeak);
+                }
+            });
+            // --------------------------------------
+
+            document.getElementById("stop-camera-btn").addEventListener("click", toggleCamera);
+
+            function addToHistory(text, timestamp) {
+                const historyList = document.getElementById('history-list');
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `<div class="history-text">${text || "(No text)"}</div><div class="history-time">${timestamp || new Date().toLocaleTimeString()}</div>`;
+                historyList.prepend(historyItem);
+            }
+
+            function saveToHistory(text) {
+                if (text.trim() === "") return;
+                const timestamp = new Date().toLocaleString();
+                addToHistory(text, timestamp);
+                fetch("/save_sentence/", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": getCookie('csrftoken'), "Content-Type": "application/x-www-form-urlencoded" },
+                    body: "sentencetext=" + encodeURIComponent(text)
+                });
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
                     }
                 }
+                return cookieValue;
             }
-            return cookieValue;
-        }
 
-        // Initialize
-        document.addEventListener("DOMContentLoaded", function () {
-            const instructionModal = document.getElementById("instructionModal");
-            instructionModal.style.display = "flex";
-
-            document.getElementById("proceedBtn").addEventListener("click", function () {
-                instructionModal.style.display = "none";
-                startCamera(); // Start camera after instructions
-            });
-
-            document.getElementById("help-btn").addEventListener("click", function () {
+            // Initialize
+            document.addEventListener("DOMContentLoaded", function () {
+                const instructionModal = document.getElementById("instructionModal");
                 instructionModal.style.display = "flex";
+
+                document.getElementById("proceedBtn").addEventListener("click", function () {
+                    instructionModal.style.display = "none";
+                    startCamera(); // Start camera after instructions
+                });
+
+                document.getElementById("help-btn").addEventListener("click", function () {
+                    instructionModal.style.display = "flex";
+                });
+
+                loadHistory();
+
+                // --- Dictionary Modal Logic ---
+                const dictModal = document.getElementById("dictionaryModal");
+                const dictBtn = document.getElementById("dict-btn");
+                const closeDictBtn = document.getElementById("closeDictBtn");
+                const closeDictFooterBtn = document.getElementById("closeDictFooterBtn");
+
+                // Open Modal
+                dictBtn.addEventListener("click", function () {
+                    dictModal.style.display = "flex";
+                });
+
+                // Close Modal (X button)
+                closeDictBtn.addEventListener("click", function () {
+                    dictModal.style.display = "none";
+                });
+
+                // Close Modal (Footer button)
+                closeDictFooterBtn.addEventListener("click", function () {
+                    dictModal.style.display = "none";
+                });
+
+                // Close when clicking outside the modal content
+                window.addEventListener("click", function (event) {
+                    if (event.target === dictModal) {
+                        dictModal.style.display = "none";
+                    }
+                    // Existing logic for instruction modal can stay here too
+                    if (event.target === document.getElementById("instructionModal")) {
+                        document.getElementById("instructionModal").style.display = "none";
+                        // Only start camera if it was the initial load, otherwise just close
+                        if (!cameraActive) startCamera();
+                    }
+                });
             });
 
-            loadHistory();
-        });
-
-        function loadHistory() {
-            fetch("/get_sentencehistory/")
-                .then(response => response.json())
-                .then(data => {
-                    const historyList = document.getElementById("history-list");
-                    historyList.innerHTML = "";
-                    (Array.isArray(data) ? data : data.history || []).forEach(item => {
-                        addToHistory(item.text, item.timestamp);
-                    });
-                })
-                .catch(err => console.error("Error loading history:", err));
-        }
-    </script>
+            function loadHistory() {
+                fetch("/get_sentencehistory/")
+                    .then(response => response.json())
+                    .then(data => {
+                        const historyList = document.getElementById("history-list");
+                        historyList.innerHTML = "";
+                        (Array.isArray(data) ? data : data.history || []).forEach(item => {
+                            addToHistory(item.text, item.timestamp);
+                        });
+                    })
+                    .catch(err => console.error("Error loading history:", err));
+            }
+        </script>
 </body>
+
 </html>

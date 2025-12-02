@@ -1,12 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
     <title>iKamAI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -47,7 +49,8 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            height: 70px; /* Fixed height for calculations */
+            height: 70px;
+            /* Fixed height for calculations */
         }
 
         .logo img {
@@ -102,7 +105,7 @@
         /* --- HERO SECTION CSS --- */
         .hero-container {
             /* Desktop: Fill remaining height */
-            min-height: calc(100vh - 70px); 
+            min-height: calc(100vh - 70px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -119,14 +122,45 @@
             z-index: 0;
             animation: floatIcon 6s ease-in-out infinite;
         }
-        .bg-icon-1 { top: 15%; left: 10%; font-size: 8rem; animation-delay: 0s; }
-        .bg-icon-2 { bottom: 10%; right: 10%; font-size: 10rem; animation-delay: 2s; }
-        .bg-icon-3 { top: 20%; right: 20%; font-size: 4rem; animation-delay: 1s; }
-        .bg-icon-4 { bottom: 20%; left: 15%; font-size: 5rem; animation-delay: 3s; }
+
+        .bg-icon-1 {
+            top: 15%;
+            left: 10%;
+            font-size: 8rem;
+            animation-delay: 0s;
+        }
+
+        .bg-icon-2 {
+            bottom: 10%;
+            right: 10%;
+            font-size: 10rem;
+            animation-delay: 2s;
+        }
+
+        .bg-icon-3 {
+            top: 20%;
+            right: 20%;
+            font-size: 4rem;
+            animation-delay: 1s;
+        }
+
+        .bg-icon-4 {
+            bottom: 20%;
+            left: 15%;
+            font-size: 5rem;
+            animation-delay: 3s;
+        }
 
         @keyframes floatIcon {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
         }
 
         .hero-wrapper {
@@ -177,7 +211,7 @@
             margin-bottom: 1rem;
             line-height: 1.3;
         }
-        
+
         .hero-subtitle span {
             color: var(--primary);
         }
@@ -191,7 +225,7 @@
             display: flex;
             align-items: center;
         }
-        
+
         .text-rotate i {
             margin-right: 10px;
             color: var(--primary);
@@ -240,7 +274,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 12rem;
-            color: rgba(255,255,255,0.1);
+            color: rgba(255, 255, 255, 0.1);
         }
 
         .scan-line {
@@ -256,10 +290,23 @@
         }
 
         @keyframes scanning {
-            0% { top: 10%; opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { top: 90%; opacity: 0; }
+            0% {
+                top: 10%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 90%;
+                opacity: 0;
+            }
         }
 
         .detection-box {
@@ -272,7 +319,7 @@
             border-radius: 12px;
             z-index: 5;
         }
-        
+
         .detection-label {
             position: absolute;
             top: -25px;
@@ -308,7 +355,7 @@
             font-size: 1.5rem;
             font-weight: 700;
         }
-        
+
         .typing-cursor {
             display: inline-block;
             width: 3px;
@@ -318,14 +365,22 @@
             vertical-align: middle;
             margin-left: 5px;
         }
-        
+
         @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
         }
 
         /* Standard Buttons */
-        .btn-primary, .btn-secondary {
+        .btn-primary,
+        .btn-secondary {
             padding: 0.875rem 2rem;
             border-radius: 50px;
             font-weight: 600;
@@ -373,15 +428,28 @@
             font-size: 2rem;
             transition: 0.3s;
         }
-        
+
         .scroll-indicator a:hover {
             color: var(--primary);
         }
 
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);}
-            40% {transform: translateY(-10px) translateX(-50%);}
-            60% {transform: translateY(-10px) translateX(-50%);}
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0) translateX(-50%);
+            }
+
+            40% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+
+            60% {
+                transform: translateY(-10px) translateX(-50%);
+            }
         }
 
         /* Sections Common Styles */
@@ -576,7 +644,7 @@
             font-weight: 500;
         }
 
-        .developer-card > p {
+        .developer-card>p {
             color: var(--gray);
             margin-bottom: 1.5rem;
         }
@@ -680,11 +748,14 @@
         }
 
         /* --- RESPONSIVE DESIGN UPDATES --- */
-        
+
+        /* Tablets */
+        /* --- RESPONSIVE DESIGN UPDATES --- */
+
         /* Tablets */
         @media (max-width: 992px) {
             .hero-wrapper {
-                flex-direction: column; /* Stack vertically: Text top, Scanner bottom */
+                flex-direction: column;
                 text-align: center;
                 padding-top: 0;
                 justify-content: center;
@@ -708,7 +779,7 @@
             .hero-title h1 {
                 font-size: 3.5rem;
             }
-            
+
             .text-rotate {
                 justify-content: center;
                 font-size: 1.1rem;
@@ -717,17 +788,22 @@
             .cta-container {
                 justify-content: center;
             }
-            
+
             .about-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .about-image {
                 order: -1;
             }
+
+            .logo img {
+                height: 35px;
+                transition: var(--transition);
+            }
         }
 
-        /* Mobile Phones - Optimized for non-scroll view */
+        /* Mobile Phones - Optimized for compact view */
         @media (max-width: 768px) {
             .navbar {
                 padding: 0.5rem 1rem;
@@ -747,24 +823,23 @@
                 transition: var(--transition);
                 z-index: 101;
             }
-            
+
             .nav-links.active {
                 right: 0;
             }
-            
+
             .hamburger {
                 display: block;
             }
-            
+
             /* Compact Hero Section */
             .hero-container {
-                /* Remove strict min-height for mobile to avoid forced gaps */
                 height: auto;
-                min-height: calc(100vh - 60px); 
-                padding: 1rem 0 2rem 0;
+                min-height: auto; /* Removed fixed height to fit content tightly */
+                padding: 2rem 0;
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-start; /* Start from top */
+                justify-content: flex-start;
             }
 
             .hero-wrapper {
@@ -778,94 +853,147 @@
                 flex: 0 0 auto;
             }
 
-            /* Make Fonts Smaller & Compact */
+            /* Smaller Fonts for Mobile */
             .hero-badge {
-                font-size: 0.75rem;
-                padding: 0.25rem 0.75rem;
+                font-size: 0.7rem;
+                padding: 0.25rem 0.6rem;
                 margin-bottom: 0.5rem;
             }
 
             .hero-title h1 {
-                font-size: 3rem; /* Much smaller than desktop */
+                font-size: 2.2rem; /* Significantly smaller */
                 margin-bottom: 0.25rem;
             }
-            
+
             .hero-subtitle {
-                font-size: 1.1rem;
+                font-size: 1rem;
                 margin-bottom: 0.5rem;
             }
-            
-            /* Hide rotating text on very small screens to save space */
+
             .text-rotate {
-                font-size: 0.9rem;
-                margin-bottom: 1rem;
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
                 min-height: 1.5rem;
             }
-            
+
             /* Compact Buttons */
             .cta-container {
-                flex-direction: row; /* Keep side-by-side */
+                flex-direction: row;
                 gap: 0.5rem;
                 margin-bottom: 1rem;
             }
-            
-            .btn-primary, .btn-secondary {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.85rem;
+
+            .btn-primary,
+            .btn-secondary {
+                padding: 0.5rem 1rem; /* Smaller padding */
+                font-size: 0.8rem;
                 width: auto;
             }
-            
-            /* Make Scanner Very Small */
+
+            /* Make Scanner Small */
             .hero-visual-side {
                 margin-bottom: 0;
                 flex: 0 0 auto;
             }
 
             .scanner-card {
-                width: 220px; /* Small width */
-                height: 280px; /* Small height */
+                width: 180px; /* Reduced width */
+                height: 240px; /* Reduced height */
                 border-width: 4px;
+                border-radius: 16px;
             }
-            
-            /* Adjust scanner internals */
+
             .hand-placeholder {
-                font-size: 6rem;
+                font-size: 4rem; /* Smaller icon inside scanner */
             }
-            
+
             .detection-label {
-                font-size: 0.7rem;
-                padding: 2px 6px;
+                font-size: 0.6rem;
+                padding: 2px 5px;
             }
-            
+
             .translation-output {
-                padding: 1rem;
+                padding: 0.8rem;
             }
-            
+
             .translation-output h3 {
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
             
+            .translation-output p {
+                font-size: 0.65rem;
+            }
+
             .scroll-indicator {
-                display: none; /* Hide scroll indicator on mobile to save space */
+                display: none;
             }
 
             .bg-icon {
-                opacity: 0.5; /* Fade icons more on mobile */
+                opacity: 0.3;
+                transform: scale(0.7); /* Smaller background icons */
             }
         }
 
         @media (max-width: 576px) {
+            /* General Section Sizing */
             section {
-                padding: 3rem 1rem;
+                padding: 2.5rem 1rem; /* Less padding between sections */
             }
             
+            .container {
+                padding: 0 0.5rem;
+            }
+
+            /* Titles */
+            .section-title {
+                margin-bottom: 2rem;
+            }
+
+            .section-title h2 {
+                font-size: 1.8rem; /* Smaller section headers */
+            }
+            
+            .section-title p {
+                font-size: 0.9rem;
+            }
+
+            /* Cards Compactness */
+            .service-card, 
+            .developer-card, 
+            .about-content {
+                padding: 1.25rem; /* Reduced internal padding */
+            }
+            
+            .service-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .service-content h3, 
+            .about-content h3 {
+                font-size: 1.25rem;
+            }
+            
+            .developer-img {
+                width: 100px;
+                height: 100px;
+            }
+
+            /* Footer Compactness */
             .footer-links {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 0.8rem;
+            }
+            
+            footer {
+                padding: 2rem 1rem;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="back-to-top" id="backToTop">
         <i class="fas fa-arrow-up"></i>
@@ -873,10 +1001,10 @@
 
     <nav class="navbar">
         <div class="logo">
-        <a href="#home">
-            <img src="{% static 'logo.png' %}" alt="iKamAI Logo"></a>
+            <a href="#home">
+                <img src="{% static 'logo.png' %}" alt="iKamAI Logo"></a>
         </div>
-        
+
         <div class="nav-links" id="navLinks">
             <a href="#home">Home</a>
             <a href="#services">Services</a>
@@ -884,7 +1012,7 @@
             <a href="#developers-section">Developers</a>
             <a href="{% url 'login' %}" class="btn-secondary">Login</a>
         </div>
-        
+
         <div class="hamburger" id="hamburger">
             <i class="fas fa-bars"></i>
         </div>
@@ -903,11 +1031,11 @@
                     <h1>iKamAI</h1>
                     <div class="hero-subtitle">Breaking Barriers With <span>Sign Language</span> AI</div>
                 </div>
-                
+
                 <div class="text-rotate">
                     <i class="fas fa-sync-alt"></i> <span id="rotating-text">Sign Language Recognition</span>
                 </div>
-                
+
                 <div class="cta-container">
                     <a href="{% url 'login' %}" class="btn-primary"><i class="fas fa-video"></i> Start Translation</a>
                     <a href="#services" class="btn-secondary">Learn More</a>
@@ -918,9 +1046,9 @@
                 <div class="scanner-card">
                     <div class="scanner-screen">
                         <i class="fas fa-hand-paper hand-placeholder"></i>
-                        
+
                         <div class="scan-line"></div>
-                        
+
                         <div class="detection-box">
                             <span class="detection-label">Hand Detected 98%</span>
                         </div>
@@ -933,7 +1061,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="scroll-indicator">
             <a href="#services">
                 <i class="fas fa-chevron-down"></i>
@@ -947,7 +1075,7 @@
                 <h2>Our Services</h2>
                 <p>iKamAI provides cutting-edge AI-powered translation services that bridge communication barriers.</p>
             </div>
-            
+
             <div class="services-container">
                 <div class="service-card">
                     <div class="service-icon">
@@ -955,27 +1083,30 @@
                     </div>
                     <div class="service-content">
                         <h3>Sign Language Recognition</h3>
-                        <p>Real-time translation of Sign Language gestures into text and speech, making communication seamless for the deaf community.</p>
+                        <p>Real-time translation of Sign Language gestures into text and speech, making communication
+                            seamless for the deaf community.</p>
                     </div>
                 </div>
-                
+
                 <div class="service-card">
                     <div class="service-icon">
                         <i class="fas fa-microphone-alt"></i>
                     </div>
                     <div class="service-content">
                         <h3>Speech to Text Conversion</h3>
-                        <p>Advanced speech recognition technology that accurately converts spoken language into written text, enabling better communication with the deaf community.</p>
+                        <p>Advanced speech recognition technology that accurately converts spoken language into written
+                            text, enabling better communication with the deaf community.</p>
                     </div>
                 </div>
-                
+
                 <div class="service-card">
                     <div class="service-icon">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
                     <div class="service-content">
                         <h3>Mobile Accessibility</h3>
-                        <p>Access our translation services on-the-go with our mobile-friendly platform, ensuring accessibility anytime, anywhere.</p>
+                        <p>Access our translation services on-the-go with our mobile-friendly platform, ensuring
+                            accessibility anytime, anywhere.</p>
                     </div>
                 </div>
             </div>
@@ -988,23 +1119,29 @@
                 <h2>About iKamAI</h2>
                 <p>Learn more about our mission to create an inclusive world through technology.</p>
             </div>
-            
+
             <div class="about-container">
                 <div class="about-content">
                     <h3>Breaking Down Communication Barriers</h3>
-                    <p>iKamAI is a revolutionary AI-powered platform developed to bridge the communication gap between the deaf community and the hearing world. Our name "iKamAI" combines "Kamay" (Filipino for "Hand") with AI, reflecting our mission to use artificial intelligence to interpret hand gestures.</p>
-                    
-                    <p>Founded with a vision to create a more inclusive society, our team of experts has developed advanced algorithms that can accurately recognize and translate sign language in real-time.</p>
-                    
+                    <p>iKamAI is a revolutionary AI-powered platform developed to bridge the communication gap between
+                        the deaf community and the hearing world. Our name "iKamAI" combines "Kamay" (Filipino for
+                        "Hand") with AI, reflecting our mission to use artificial intelligence to interpret hand
+                        gestures.</p>
+
+                    <p>Founded with a vision to create a more inclusive society, our team of experts has developed
+                        advanced algorithms that can accurately recognize and translate sign language in real-time.</p>
+
                     <ul>
-                        <li><i class="fas fa-check-circle"></i> Accessible for all users regardless of technical expertise</li>
+                        <li><i class="fas fa-check-circle"></i> Accessible for all users regardless of technical
+                            expertise</li>
                         <li><i class="fas fa-check-circle"></i> Continually improving through machine learning</li>
                         <li><i class="fas fa-check-circle"></i> Real-time translation with minimal latency</li>
                     </ul>
                 </div>
-                
+
                 <div class="about-image">
-                    <img src="{% static 'full.png' %}" alt="About iKamAI" onerror="this.src='https://via.placeholder.com/600x400/30D5C8/ffffff?text=iKamAI'">
+                    <img src="{% static 'full.png' %}" alt="About iKamAI"
+                        onerror="this.src='https://via.placeholder.com/600x400/30D5C8/ffffff?text=iKamAI'">
                 </div>
             </div>
         </div>
@@ -1016,38 +1153,46 @@
                 <h2>Meet the Developers</h2>
                 <p>The talented team behind iKamAI's innovative technology</p>
             </div>
-            
+
             <div class="developers-container">
                 <div class="developer-card">
-                    <img src="{% static '1by1KC.png' %}" alt="K.C. Villanueva" class="developer-img" onerror="this.src='https://via.placeholder.com/120x120/30D5C8/ffffff?text=KC'">
+                    <img src="{% static '1by1KC.png' %}" alt="K.C. Villanueva" class="developer-img"
+                        onerror="this.src='https://via.placeholder.com/120x120/30D5C8/ffffff?text=KC'">
                     <h3 class="developer-name">K.C. Villanueva</h3>
                     <p class="developer-role">Programmer / Technical Writer</p>
                     <p>Backend specialist with expertise in machine learning and computer vision algorithms.</p>
                     <div class="developer-social">
-                        <a href="https://www.facebook.com/share/16RN47RzVq/" aria-label="Facebook profile"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.facebook.com/share/16RN47RzVq/" aria-label="Facebook profile"><i
+                                class="fab fa-facebook"></i></a>
                         <a href="mailto:villanuevakc13@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
                     </div>
                 </div>
-                
+
                 <div class="developer-card">
-                    <img src="{% static 'neil.png' %}" alt="Neil Franklin Echanova" class="developer-img" onerror="this.src='https://via.placeholder.com/120x120/30D5C8/ffffff?text=Neil'">
+                    <img src="{% static 'neil.png' %}" alt="Neil Franklin Echanova" class="developer-img"
+                        onerror="this.src='https://via.placeholder.com/120x120/30D5C8/ffffff?text=Neil'">
                     <h3 class="developer-name">Neil Franklin Echanova</h3>
                     <p class="developer-role">Programmer / Technical Writer</p>
                     <p>UI/UX designer focused on creating accessible and intuitive user experiences.</p>
                     <div class="developer-social">
-                        <a href="https://www.facebook.com/neilicioussss" aria-label="Facebook profile"><i class="fab fa-facebook"></i></a>
-                        <a href="mailto:neilfranklin618@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                        <a href="https://www.facebook.com/neilicioussss" aria-label="Facebook profile"><i
+                                class="fab fa-facebook"></i></a>
+                        <a href="mailto:neilfranklin618@gmail.com" aria-label="Email"><i
+                                class="fas fa-envelope"></i></a>
                     </div>
                 </div>
-                
+
                 <div class="developer-card">
-                    <img src="{% static 'image.png' %}" alt="Kenneth Inciong" class="developer-img" onerror="this.src='https://via.placeholder.com/120x120/30D5C8/ffffff?text=Kenneth'">
+                    <img src="{% static 'image.png' %}" alt="Kenneth Inciong" class="developer-img"
+                        onerror="this.src='https://via.placeholder.com/120x120/30D5C8/ffffff?text=Kenneth'">
                     <h3 class="developer-name">Kenneth Inciong</h3>
                     <p class="developer-role">Technical Writer</p>
                     <p>Specialized in sign language recognition and natural language processing.</p>
                     <div class="developer-social">
-                        <a href="https://www.facebook.com/kenneth.chingkit.5" aria-label="Facebook profile"><i class="fab fa-facebook"></i></a>
-                        <a href="mailto:kennethinciong234@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                        <a href="https://www.facebook.com/kenneth.chingkit.5" aria-label="Facebook profile"><i
+                                class="fab fa-facebook"></i></a>
+                        <a href="mailto:kennethinciong234@gmail.com" aria-label="Email"><i
+                                class="fas fa-envelope"></i></a>
                     </div>
                 </div>
             </div>
@@ -1059,7 +1204,7 @@
             <div class="footer-logo">
                 <img src="{% static '3.png' %}" alt="iKamAI Logo">
             </div>
-            
+
             <div class="footer-links">
                 <a href="#home">Home</a>
                 <a href="#services">Services</a>
@@ -1067,23 +1212,23 @@
                 <a href="#developers-section">Developers</a>
                 <a href="{% url 'login' %}">Login</a>
             </div>
-            
+
             <p class="copyright">© 2023 iKamAI - FSL Translator. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
         // Mobile Navigation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const hamburger = document.getElementById('hamburger');
             const navLinks = document.getElementById('navLinks');
-            
-            hamburger.addEventListener('click', function() {
+
+            hamburger.addEventListener('click', function () {
                 navLinks.classList.toggle('active');
                 this.querySelector('i').classList.toggle('fa-times');
                 this.querySelector('i').classList.toggle('fa-bars');
             });
-            
+
             document.querySelectorAll('.nav-links a').forEach(link => {
                 link.addEventListener('click', () => {
                     navLinks.classList.remove('active');
@@ -1091,10 +1236,10 @@
                     hamburger.querySelector('i').classList.remove('fa-times');
                 });
             });
-            
+
             // Back to Top Button
             const backToTopButton = document.getElementById('backToTop');
-            
+
             window.addEventListener('scroll', () => {
                 if (window.pageYOffset > 300) {
                     backToTopButton.classList.add('active');
@@ -1102,19 +1247,19 @@
                     backToTopButton.classList.remove('active');
                 }
             });
-            
+
             backToTopButton.addEventListener('click', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-            
+
             // Smooth scrolling for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
+                anchor.addEventListener('click', function (e) {
                     e.preventDefault();
-                    
+
                     const targetId = this.getAttribute('href');
                     if (targetId === '#') return;
-                    
+
                     const targetElement = document.querySelector(targetId);
                     if (targetElement) {
                         targetElement.scrollIntoView({
@@ -1123,7 +1268,7 @@
                     }
                 });
             });
-            
+
             // Text rotation animation
             const textSpan = document.getElementById('rotating-text');
             const texts = [
@@ -1131,23 +1276,24 @@
                 "Sign Language Recognition",
                 "Sign to Text Conversion"
             ];
-            
+
             let currentIndex = 0;
-            
+
             function rotateText() {
-                if(!textSpan) return;
-                
+                if (!textSpan) return;
+
                 textSpan.style.opacity = 0;
-                
+
                 setTimeout(() => {
                     currentIndex = (currentIndex + 1) % texts.length;
                     textSpan.textContent = texts[currentIndex];
                     textSpan.style.opacity = 1;
                 }, 500);
             }
-            
+
             setInterval(rotateText, 3000);
         });
     </script>
 </body>
+
 </html>
