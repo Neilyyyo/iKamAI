@@ -1287,37 +1287,68 @@ def reset_prediction(request):
     return JsonResponse({'status': 'reset'})
 
 # views.py
+import requests
+from django.conf import settings
+from firebase_admin import auth as firebase_auth
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
 
-from django.contrib import messages, auth
-from django.shortcuts import redirect
-
-from django.contrib.auth.decorators import login_required
-
-@login_required
+@firebase_login_required
 def change_password(request):
     if request.method == 'POST':
-        current = request.POST.get('current_password')
-        new = request.POST.get('new_password')
-        confirm = request.POST.get('confirm_password')
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # 1. Get User Details from Session
+        uid = request.session.get('uid')
+        # Try to get email from session, otherwise fetch from Auth
+        email = request.session.get('email') 
+        
+        # If email isn't in session, fetch it using the UID
+        if not email and uid:
+            try:
+                user_record = firebase_auth.get_user(uid)
+                email = user_record.email
+            except:
+                messages.error(request, "Could not verify user email.")
+                return redirect('account')
 
-        if new != confirm:
+        # 2. Validate New Passwords Match
+        if new_password != confirm_password:
             messages.error(request, "New passwords do not match.")
-            return redirect('account')  
-
-        user = request.user
-        if not user.check_password(current):
-            messages.error(request, "Current password is incorrect.")
             return redirect('account')
 
-        user.set_password(new)
-        user.save()
-        auth.update_session_auth_hash(request, user)  # keep logged in
-        messages.success(request, "Password changed successfully!")
-        return redirect('account')
+        # 3. Verify OLD Password (using REST API)
+        # We must verify they know the old password before changing it
+        api_key = settings.FIREBASE_WEB_API_KEY
+        verify_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}"
+        payload = {
+            "email": email,
+            "password": current_password,
+            "returnSecureToken": False
+        }
+
+        try:
+            response = requests.post(verify_url, json=payload)
+            result = response.json()
+
+            if "error" in result:
+                messages.error(request, "Incorrect current password.")
+                return redirect('account')
+
+            # 4. If Old Password is correct, Update to New Password (using Admin SDK)
+            firebase_auth.update_user(uid, password=new_password)
+            
+            messages.success(request, "Password changed successfully!")
+            return redirect('account')
+
+        except Exception as e:
+            print(f"Password change error: {e}")
+            messages.error(request, "An error occurred while changing password.")
+            return redirect('account')
+
+    return redirect('account')
     
 from firebase_admin import auth as firebase_auth
 from django.shortcuts import render, redirect
@@ -1325,29 +1356,39 @@ from django.contrib import messages
 from firebase_admin import auth as firebase_auth
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.core.mail import send_mail
+from django.conf import settings
 
 def forgot_password_view(request):
     if request.method == "GET":
-        email = request.GET.get("email")  # or from a form input
+        email = request.GET.get("email")
         if not email:
             messages.error(request, "Please provide an email address.")
             return redirect("login")
 
         try:
-            # ✅ Check if user exists in Firebase Authentication
+            # 1. Check if user exists in Firebase
             firebase_auth.get_user_by_email(email)
 
-            # ✅ Generate reset link
+            # 2. Generate the reset link
             link = firebase_auth.generate_password_reset_link(email)
 
-            # TODO: send link via email (Django send_mail or similar)
-            # send_mail("Reset your password", f"Click here: {link}", "noreply@yourapp.com", [email])
+            # 3. Send the email via Gmail
+            send_mail(
+                subject="Reset your iKamAI Password",
+                message=f"Click the link below to reset your password:\n\n{link}\n\nIf you did not request this, please ignore this email.",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+                fail_silently=False,
+            )
 
             messages.success(request, "Password reset link sent to your email.")
+            
         except firebase_auth.UserNotFoundError:
             messages.error(request, "No account found with this email.")
         except Exception as e:
-            messages.error(request, f"Error sending reset link: {str(e)}")
+            print(f"Error sending email: {e}") # Check your terminal for this if it fails
+            messages.error(request, "An error occurred. Please try again.")
 
     return redirect("login")
 
