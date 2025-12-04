@@ -13,7 +13,7 @@ try:
 except ImportError:
     # Fallback for local dev if you only have full TF installed
     import tensorflow.lite as tflite
-
+    
 def draw_landmarks(image, results):
     mp_holistic = mp.solutions.holistic
     mp_drawing = mp.solutions.drawing_utils
@@ -55,22 +55,20 @@ class WordPredictor:
     def __init__(self, model_path, actions_list):
         print(f"Loading TFLite Word Model from: {model_path}")
         
-        # --- CHANGE: Use the lightweight interpreter ---
-        self.interpreter = tflite.Interpreter(model_path=model_path)
+        # --- CHANGED: Load TFLite Interpreter instead of Keras model ---
+        self.interpreter = tf.lite.Interpreter(model_path=model_path)
         self.interpreter.allocate_tensors()
         
         # Get input and output details
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
-        
+        # ---------------------------------------------------------------
+
         self.actions = np.array(actions_list)
         
-        # Optimization: Reduce MediaPipe complexity slightly to save RAM
         self.holistic = mp.solutions.holistic.Holistic(
             min_detection_confidence=0.70, 
-            min_tracking_confidence=0.70,
-            model_complexity=0,  # 0=Lite (Fast/Low RAM), 1=Full (Default), 2=Heavy
-            static_image_mode=False 
+            min_tracking_confidence=0.70
         )
         
         self.lock = threading.Lock()
@@ -87,7 +85,7 @@ class WordPredictor:
         # Stabilization Variables
         self.hand_present = False
         self.skip_counter = 0
-        self.SKIP_FRAMES = 2
+        self.SKIP_FRAMES = 2 
         
     def process_web_frame(self, base64_image):
         result_data = {

@@ -1233,68 +1233,161 @@ def get_sentencehistory(request):
 import os
 from django.conf import settings
 from .predictor import SignPredictor
+from .utils import WordPredictor
+import gc
 
 # 2. GLOBAL INITIALIZATION (Runs ONCE when server starts)
-print("⏳ Initializing AI Models...")
+# print("⏳ Initializing AI Models...")
 
-# --- Load Sign Predictor ---
-try:
-    print(f"   Loading SignPredictor...")
-    # Load the model once here.
-    sign_predictor = SignPredictor()
-    print("   ✅ SignPredictor loaded.")
-except Exception as e:
-    print(f"   ❌ SignPredictor Failed: {e}")
-    sign_predictor = None
+# # --- Load Sign Predictor ---
+# try:
+#     print(f"   Loading SignPredictor...")
+#     # Load the model once here.
+#     sign_predictor = SignPredictor()
+#     print("   ✅ SignPredictor loaded.")
+# except Exception as e:
+#     print(f"   ❌ SignPredictor Failed: {e}")
+#     sign_predictor = None
 
 # 3. VIEWS USING GLOBAL VARIABLES
+# ==========================================
+# LAZY LOADING LOGIC (CORRECTED)
+# ==========================================
+
+# 1. Define Global Variables explicitly to None
+# This fixes the "name 'sign_predictor' is not defined" error
+# ==========================================
+# LAZY LOADING LOGIC (CORRECTED)
+# ==========================================
+# ==========================================
+# LAZY LOADING LOGIC (INTEGRATED)
+# ==========================================
+import gc 
+import os
+import numpy as np
+from django.conf import settings
+
+# 1. DEFINE GLOBALS CORRECTLY (Must be None initially)
+sign_predictor = None
+word_predictor = None
+ACTIONS = None
+
+def get_actions_list():
+    """Helper to load actions list only when needed"""
+    global ACTIONS
+    if ACTIONS is None:
+        # --- YOUR CODE SNIPPET INTEGRATED HERE ---
+        DATA_PATH = os.path.join(settings.BASE_DIR, 'data')
+
+        try:
+            if os.path.exists(DATA_PATH):
+                print(f"   📂 Data folder found. Loading labels from: {DATA_PATH}")
+                # This copies the logic from RealTime.py: actions = np.array(os.listdir(PATH))
+                ACTIONS = np.array(os.listdir(DATA_PATH))
+            else:
+                print("   ⚠️ 'data' folder not found. Using hardcoded labels.")
+                # Fallback list if folder is missing
+                ACTIONS = np.array(['hello', 'thanks', 'iloveyou', 'yes', 'no', 'help', 'sorry', 'please', 'thankyou', 
+                            'goodbye', 'imissyou', 'good morning', 'asl', 'good afternoon', ]) 
+
+            print(f"   ✅ Actions loaded: {ACTIONS}")
+
+        except Exception as e:
+            print(f"   ❌ Error loading actions: {e}")
+            ACTIONS = np.array([])
+
+    return ACTIONS
+
+def load_sign_predictor():
+    """Loads Sign model, Unloads Word model to save RAM"""
+    global sign_predictor, word_predictor
+    
+    if sign_predictor is not None:
+        return sign_predictor
+
+    # FREE MEMORY: Unload the other model if it exists
+    if word_predictor is not None:
+        print("⚠️ Unloading Word Predictor to save RAM...")
+        word_predictor = None
+        gc.collect()
+
+    print("⏳ Loading SignPredictor...")
+    try:
+        sign_predictor = SignPredictor()
+        return sign_predictor
+    except Exception as e:
+        print(f"❌ Failed to load SignPredictor: {e}")
+        return None
+
+def load_word_predictor():
+    """Loads Word model, Unloads Sign model to save RAM"""
+    global sign_predictor, word_predictor
+    
+    if word_predictor is not None:
+        return word_predictor
+
+    # FREE MEMORY: Unload the other model if it exists
+    if sign_predictor is not None:
+        print("⚠️ Unloading Sign Predictor to save RAM...")
+        sign_predictor = None
+        gc.collect()
+
+    print("⏳ Loading WordPredictor...")
+    try:
+        # --- YOUR CODE SNIPPET INTEGRATED HERE ---
+        WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'my_model.tflite') 
+        
+        actions = get_actions_list()
+        
+        word_predictor = WordPredictor(model_path=WORD_MODEL_PATH, actions_list=actions)
+        return word_predictor
+    except Exception as e:
+        print(f"❌ Failed to load WordPredictor: {e}")
+        return None
 
 def fsl(request):
     return render(request, 'fsltotext.html')
 
 @csrf_exempt
 def predict(request):
-    """
-    View for Sign/Letter Prediction (Spelling Mode)
-    """
-    global sign_predictor # Use the global instance
+    """ View for Sign/Letter Prediction """
+    # USE THE LOADER FUNCTION
+    model = load_sign_predictor() 
 
-    if sign_predictor is None:
+    if model is None:
         return JsonResponse({'status': 'error', 'message': 'Sign Model failed to load'}, status=500)
 
-    # 1. Handle Image Upload (POST)
     if request.method == "POST":
         image_data = request.POST.get('image')
         if image_data:
-            data = sign_predictor.process_web_frame(image_data) 
+            data = model.process_web_frame(image_data) 
             return JsonResponse(data)
 
-    # 2. Handle Clear Command (GET)
     if request.GET.get("clear") == "true":
-        sign_predictor.clear_fun()
+        model.clear_fun()
         return JsonResponse({
             'character': '',
             'sentence': '',
             'suggestions': ['', '', '', '']
         })
 
-    # 3. Default GET (Status check)
-    return JsonResponse(sign_predictor.get_status())
+    return JsonResponse(model.get_status())
 
 @csrf_exempt
 def apply_suggestion(request):
-    global sign_predictor
-    if sign_predictor is None:
+    # USE THE LOADER FUNCTION
+    model = load_sign_predictor()
+    
+    if model is None:
         return JsonResponse({"success": False, "error": "Model not loaded"})
     
     try:
         data = json.loads(request.body)
         new_sentence = data.get("sentence", "")
-        sign_predictor.apply_suggestion(new_sentence)
+        model.apply_suggestion(new_sentence)
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
-
 # views.py
 from firebase_admin import firestore
 
@@ -1785,43 +1878,43 @@ from .utils import WordPredictor
 # MODEL INITIALIZATION
 # ==========================================
 
-print("⏳ Initializing Word Prediction Model...")
+# print("⏳ Initializing Word Prediction Model...")
 
 # 1. Define Paths
 # CHANGE THIS LINE: .h5 -> .tflite
-WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'my_model.tflite') 
+# WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'my_model.tflite') 
 
-DATA_PATH = os.path.join(settings.BASE_DIR, 'data')
+# DATA_PATH = os.path.join(settings.BASE_DIR, 'data')
 
-# 2. Load Labels (Actions) automatically from the Data folder
-try:
-    if os.path.exists(DATA_PATH):
-        print(f"   📂 Data folder found. Loading labels from: {DATA_PATH}")
-        # This copies the logic from RealTime.py: actions = np.array(os.listdir(PATH))
-        ACTIONS = np.array(os.listdir(DATA_PATH))
-    else:
-        print("   ⚠️ 'data' folder not found. Using hardcoded labels.")
-        # Fallback list if folder is missing
-        ACTIONS = np.array(['hello', 'iloveyou', 'yes', 'no', 'help', 'sorry', 'please', 'thankyou', 
-                    'goodbye', 'imissyou', 'good morning', 'good afternoon', ]) 
+# # 2. Load Labels (Actions) automatically from the Data folder
+# try:
+#     if os.path.exists(DATA_PATH):
+#         print(f"   📂 Data folder found. Loading labels from: {DATA_PATH}")
+#         # This copies the logic from RealTime.py: actions = np.array(os.listdir(PATH))
+#         ACTIONS = np.array(os.listdir(DATA_PATH))
+#     else:
+#         print("   ⚠️ 'data' folder not found. Using hardcoded labels.")
+#         # Fallback list if folder is missing
+#         ACTIONS = np.array(['hello', 'iloveyou', 'yes', 'no', 'help', 'sorry', 'please', 'thankyou', 
+#                     'goodbye', 'imissyou', 'good morning', 'good afternoon', ]) 
 
-    print(f"   ✅ Actions loaded: {ACTIONS}")
+#     print(f"   ✅ Actions loaded: {ACTIONS}")
 
-except Exception as e:
-    print(f"   ❌ Error loading actions: {e}")
-    ACTIONS = np.array([])
+# except Exception as e:
+#     print(f"   ❌ Error loading actions: {e}")
+#     ACTIONS = np.array([])
 
-# 3. Load the Predictor
-try:
-    if os.path.exists(WORD_MODEL_PATH):
-        word_predictor = WordPredictor(model_path=WORD_MODEL_PATH, actions_list=ACTIONS)
-        print("   ✅ WordPredictor loaded successfully.")
-    else:
-        print(f"   ❌ Model file not found at: {WORD_MODEL_PATH}")
-        word_predictor = None
-except Exception as e:
-    print(f"   ❌ WordPredictor Failed to load: {e}")
-    word_predictor = None
+# # 3. Load the Predictor
+# try:
+#     if os.path.exists(WORD_MODEL_PATH):
+#         word_predictor = WordPredictor(model_path=WORD_MODEL_PATH, actions_list=ACTIONS)
+#         print("   ✅ WordPredictor loaded successfully.")
+#     else:
+#         print(f"   ❌ Model file not found at: {WORD_MODEL_PATH}")
+#         word_predictor = None
+# except Exception as e:
+#     print(f"   ❌ WordPredictor Failed to load: {e}")
+#     word_predictor = None
 
 # ==========================================
 # VIEWS
@@ -1830,12 +1923,11 @@ except Exception as e:
 @csrf_exempt
 @require_POST
 def get_prediction(request):
-    """
-    Receives base64 image -> Utils.WordPredictor -> Returns JSON
-    """
-    global word_predictor
+    """ View for Word Prediction """
+    # USE THE LOADER FUNCTION
+    model = load_word_predictor()
 
-    if word_predictor is None:
+    if model is None:
         return JsonResponse({'status': 'error', 'message': 'Model not loaded'}, status=500)
 
     try:
@@ -1843,16 +1935,15 @@ def get_prediction(request):
         if not image_data:
             return JsonResponse({'status': 'error', 'message': 'No image data'}, status=400)
 
-        # Process via our Utils class
-        result = word_predictor.process_web_frame(image_data)
+        result = model.process_web_frame(image_data)
         return JsonResponse(result)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
 @csrf_exempt
 @require_POST
 def reset_prediction(request):
+    # Only reset if it is currently loaded
     global word_predictor
     if word_predictor:
         word_predictor.reset()
