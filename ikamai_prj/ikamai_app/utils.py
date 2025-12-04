@@ -1,19 +1,24 @@
-# utils.py
 import cv2
 import numpy as np
 import mediapipe as mp
 import os
 import base64
 import threading
-import tensorflow as tf  # Changed: Import TF for TFLite Interpreter
 
 # --- 1. Keypoints Extraction Logic (UNCHANGED) ---
+# This logic checks if the lightweight tflite_runtime is available.
+# If not (like on your local PC), it falls back to full tensorflow.lite.
 try:
     import tflite_runtime.interpreter as tflite
+    print("✅ Using tflite_runtime")
 except ImportError:
-    # Fallback for local dev if you only have full TF installed
-    import tensorflow.lite as tflite
-    
+    try:
+        import tensorflow.lite as tflite
+        print("⚠️ tflite_runtime not found, using tensorflow.lite")
+    except ImportError:
+        print("❌ CRITICAL: No TensorFlow Lite interpreter found!")
+        raise
+
 def draw_landmarks(image, results):
     mp_holistic = mp.solutions.holistic
     mp_drawing = mp.solutions.drawing_utils
@@ -55,8 +60,9 @@ class WordPredictor:
     def __init__(self, model_path, actions_list):
         print(f"Loading TFLite Word Model from: {model_path}")
         
-        # --- CHANGED: Load TFLite Interpreter instead of Keras model ---
-        self.interpreter = tf.lite.Interpreter(model_path=model_path)
+        # --- CHANGED: Use 'tflite' alias defined at top, NOT 'tf.lite' ---
+        # This prevents loading the full TensorFlow library
+        self.interpreter = tflite.Interpreter(model_path=model_path)
         self.interpreter.allocate_tensors()
         
         # Get input and output details
