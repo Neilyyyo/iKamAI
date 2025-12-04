@@ -39,7 +39,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             color: var(--text-dark);
-             background: linear-gradient(135deg, #f4f4f4 0%, #e6f7f5 100%);
+            background: linear-gradient(135deg, #f4f4f4 0%, #e6f7f5 100%);
             line-height: 1.6;
         }
 
@@ -374,6 +374,15 @@
             max-width: 500px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             animation: modalFadeIn 0.3s ease;
+            max-height: 90vh; /* Ensure modal doesn't overflow screen */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-body-scroll {
+            overflow-y: auto; /* Enable scrolling for long lists */
+            padding-right: 5px;
+            margin-bottom: 1rem;
         }
 
         .modal-header {
@@ -432,17 +441,81 @@
             font-size: 1.2rem;
         }
 
-        .camera-history-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
         .modal-footer {
             display: flex;
             justify-content: flex-end;
+            margin-top: auto;
         }
+       .dict-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dict-grid {
+            display: grid;
+            /* CHANGE HERE: repeat(3, 1fr) forces exactly 3 columns */
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dict-item-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem 0.25rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+            transition: var(--transition);
+            cursor: default;
+            font-size: 0.9rem;
+        }
+
+        .dict-item-box:hover {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(48, 213, 200, 0.2);
+        }
+
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+        }
+
+        .command-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .command-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .command-item i {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
 
         /* Header Back Button Styles */
         .header-back-btn {
@@ -476,51 +549,31 @@
         }
 
         .camera-feed {
-        width: 100%;
-        max-width: 640px;
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        margin: 0 auto 1.5rem;
-    }
+            width: 100%;
+            max-width: 640px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 1.5rem;
+        }
 
-    /* ... other styles ... */
-    
-    #videoElement {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transform: scaleX(-1);
-    }
-
-    /* --- ADD THIS HERE --- */
-    #canvasElement {
-        display: none;
-    }
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
 
         /* Animations */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         @keyframes modalFadeIn {
@@ -528,7 +581,6 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -543,7 +595,6 @@
 
             .camera-feed img {
                 width: 100%;
-                /* Make feed full width */
                 height: auto;
             }
 
@@ -557,12 +608,12 @@
             }
 
             .page-title {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        .container {
-            padding-top: 1.2rem;
-        }
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+            .container {
+                padding-top: 1.2rem;
+            }
         }
 
         @media (max-width: 768px) {
@@ -580,10 +631,10 @@
             .controls-section {
                 padding: 1.5rem;
             }
-             .page-title h1 {
+            .page-title h1 {
                 font-size: 1.5rem;
             }
-             .page-title p {
+            .page-title p {
                 font-size: 1.2rem;
             }
         }
@@ -605,7 +656,6 @@
             .page-title h1 {
                 font-size: 1.5rem;
             }
-
             .card-header h2 {
                 font-size: 1.2rem;
             }
@@ -614,7 +664,6 @@
 </head>
 
 <body>
-    <!-- Header -->
     <header class="header">
         <a href="{% url 'home' %}" class="header-back-btn">
             <i class="fas fa-chevron-left"></i> 
@@ -622,22 +671,22 @@
         </a>
 
         <div class="header-right">
-            <div class="nav-icon" id="help-btn">
+            <div class="nav-icon" id="dict-btn" title="Sign Dictionary">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="nav-icon" id="help-btn" title="Help">
                 <i class="fas fa-question-circle"></i>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
     <div class="container">
         <div class="page-title">
             <h1>Text to Sign Language Translation</h1>
             <p>Real-time translation from text to sign language</p>
         </div>
         <main class="main-content">
-            <!-- Camera and History Section -->
             <div class="camera-history-container">
-                <!-- Camera Section -->
                 <section class="camera-section">
                     <h2 class="section-title">
                         <i class="fas fa-video"></i>
@@ -649,14 +698,12 @@
                     </div>
                 </section>
 
-                <!-- History Panel -->
                 <section class="history-panel">
                     <h2 class="section-title">
                         <i class="fas fa-history"></i>
                         Detection History
                     </h2>
                     <ul class="history-list" id="history-list">
-                        <!-- History items will be added here dynamically -->
                         <li class="history-item">
                             <span class="history-text">No history yet</span>
                             <span class="history-time">--:--</span>
@@ -665,7 +712,6 @@
                 </section>
             </div>
 
-            <!-- Prediction Section -->
             <section class="prediction-section">
                 <h2 class="section-title">
                     <i class="fas fa-chart-line"></i>
@@ -689,7 +735,6 @@
                 </div>
             </section>
 
-            <!-- Controls Section -->
             <section class="controls-section">
                 <h2 class="section-title">
                     <i class="fas fa-sliders-h"></i>
@@ -721,7 +766,6 @@
         </main>
     </div>
 
-    <!-- Instruction Modal -->
     <div class="modal" id="instruction-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -735,12 +779,6 @@
             </div>
 
             <ul class="instruction-list">
-                <!-- <li class="instruction-item">
-                    <div class="instruction-icon">
-                        <i class="fas fa-hand-paper"></i>
-                    </div>
-                    <div>Position your hand clearly within the camera view with good lighting conditions</div>
-                </li> -->
                 <li class="instruction-item">
                     <div class="instruction-icon">
                         <i class="fas fa-video"></i>
@@ -775,8 +813,52 @@
         </div>
     </div>
 
+   <!-- Modal Structure -->
+    <div class="modal" id="dictionaryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-book"></i> Sign Dictionary
+                </h3>
+                <button class="close-modal" id="closeDictBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body-scroll">
+                
+                <div class="dict-section-title">
+                    <i class="fas fa-font"></i> Available Words 
+                </div>
+                
+                <div class="dict-grid">
+                    <div class="dict-item-box">Hello</div>
+                    <div class="dict-item-box">Thank You</div>
+                    <div class="dict-item-box">I Love You</div>
+                    <div class="dict-item-box">Yes</div>
+                    <div class="dict-item-box">No</div>
+                    <div class="dict-item-box">Help</div>
+                    <div class="dict-item-box">Sorry</div>
+                    <div class="dict-item-box">Please</div>
+                    <div class="dict-item-box">Goodbye</div>
+                    <div class="dict-item-box">I Miss You</div>
+                    <div class="dict-item-box">Eat</div>
+                    <div class="dict-item-box">ASL</div>
+                    <div class="dict-item-box">Good Morning</div>
+                    <div class="dict-item-box">Good Afternoon</div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeDictFooterBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-      // Global variables
+        // Global variables
         let cameraActive = true;
         let predictionInterval;
         let historyCount = 0;
@@ -797,6 +879,14 @@
         const cameraToggleBtn = document.getElementById('camera-toggle-btn');
         const statusDot = document.getElementById('status-dot');
         const recentCount = document.getElementById('recent-count');
+        const helpBtn = document.getElementById("help-btn");
+
+        // Dictionary Modal Elements
+        const dictBtn = document.getElementById("dict-btn");
+        const dictionaryModal = document.getElementById("dictionaryModal");
+        const closeDictBtn = document.getElementById("closeDictBtn");
+        const closeDictFooterBtn = document.getElementById("closeDictFooterBtn");
+
 
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
@@ -808,8 +898,28 @@
             startCamera();
         });
 
+        // Instructions Modal Logic
         closeModal.addEventListener('click', () => { instructionModal.style.display = 'none'; });
-        document.getElementById("help-btn").addEventListener("click", () => { instructionModal.style.display = "flex"; });
+        helpBtn.addEventListener("click", () => { instructionModal.style.display = "flex"; });
+
+        // Dictionary Modal Logic
+        dictBtn.addEventListener("click", () => { dictionaryModal.style.display = "flex"; });
+        
+        const closeDictionary = () => { dictionaryModal.style.display = "none"; };
+        closeDictBtn.addEventListener("click", closeDictionary);
+        closeDictFooterBtn.addEventListener("click", closeDictionary);
+
+        // Close modals when clicking outside
+        window.addEventListener("click", (e) => {
+            if (e.target == dictionaryModal) {
+                dictionaryModal.style.display = "none";
+            }
+            if (e.target == instructionModal) {
+                // optional: prevent closing instructions by clicking outside if you prefer
+                // instructionModal.style.display = "none"; 
+            }
+        });
+
 
         // --- CAMERA FUNCTIONS ---
         function startCamera() {
@@ -877,8 +987,6 @@
             const dataURL = canvas.toDataURL('image/jpeg', 0.6); // 0.6 quality compression
 
             // Send to Backend
-            // NOTE: Ensure your views.py maps 'get_prediction' to handle POST requests with images
-            // Or create a new URL for this. Here I assume we use a unified endpoint or specific one.
             fetch('/get_prediction/', { 
                 method: "POST",
                 headers: {

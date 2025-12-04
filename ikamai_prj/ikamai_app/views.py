@@ -1572,24 +1572,41 @@ from django.contrib import messages
 db = firestore.client()
 @firebase_login_required
 def search_video_view(request):
-    """Search video by title and return signed URL + save query to Firestore only if video exists"""
+    """Search video by title (Case-Insensitive)"""
 
-    user_id = request.session.get("uid")  # 🔹 get current logged-in UID
+    user_id = request.session.get("uid")
     query = request.GET.get("q")
     video_url, searched = None, False
 
     if query:
         searched = True
-        results = db.collection("videos").where("title", "==", query).get()
+        # 1. Standardize user input: remove spaces and make lowercase
+        target_title = query.strip().lower()
+        
+        # 2. Fetch ALL videos (We have to stream them to compare locally)
+        # Note: If you have thousands of videos, it is better to save a "title_lower" field in the database.
+        # For now, this loop works perfectly for hundreds of videos.
+        docs = db.collection("videos").stream()
+        
+        video_doc = None
+        
+        # 3. Loop through videos and compare titles case-insensitively
+        for doc in docs:
+            data = doc.to_dict()
+            db_title = data.get("title", "").strip().lower()
+            
+            if db_title == target_title:
+                video_doc = data
+                break  # Stop searching once found
 
-        if results:
-            video_doc = results[0].to_dict()
+        # 4. If a match was found
+        if video_doc:
             file_name = video_doc.get("file_name")
-            video_url = generate_temp_url(file_name)  # signed URL
+            video_url = generate_temp_url(file_name)  # generate signed URL
 
-            # ✅ Save search only if video found
+            # Save search history (Save the original query format the user typed)
             search_metadata = {
-                "query": query,
+                "query": query, 
                 "user_id": user_id,
                 "timestamp": firestore.SERVER_TIMESTAMP,
             }
@@ -1597,10 +1614,9 @@ def search_video_view(request):
         else:
             messages.warning(request, "No video found for your query.")
 
-    # 🔹 Fetch ALL search history for THIS USER (no order_by → no index needed)
+    # --- History Loading Logic (Same as before) ---
     history_docs = db.collection("search_history").where("user_id", "==", user_id).get()
 
-    # 🔹 Sort manually in Python
     history_list = []
     for doc in history_docs:
         item = doc.to_dict()
@@ -1619,11 +1635,10 @@ def search_video_view(request):
             "timestamp": item.get("timestamp")
         })
 
-    # 🔹 Sort by timestamp DESC and keep only 5
+    # Sort by timestamp DESC and keep only 5
     history_list.sort(key=lambda x: x["timestamp"] or 0, reverse=True)
     history_list = history_list[:5]
 
-    # 🔹 Format timestamp for display
     for h in history_list:
         if h["timestamp"]:
             h["timestamp"] = h["timestamp"].strftime("%Y-%m-%d %H:%M")
@@ -1634,7 +1649,6 @@ def search_video_view(request):
         "searched": searched,
         "history_list": history_list
     })
-
 
 def stream_video_view(request, file_id):
     """(Optional) Proxy streaming via Django with Authorization header"""

@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <title>Account Information</title>
     <style>
+        /* --- KEEPING YOUR EXISTING CSS EXACTLY AS IS --- */
         :root {
             --primary: #30D5C8;
             --primary-dark: #2DAA9E;
@@ -24,514 +25,81 @@
             --transition: all 0.3s ease;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f4f4f4 0%, #e6f7f5 100%);
-            color: var(--dark);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        /* Header Styles */
-        .header {
-            padding: 1rem 2rem;
-            background-color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header img {
-            height: 50px;
-            transition: var(--transition);
-        }
-
-        .header img:hover {
-            transform: scale(1.05);
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .icon-button {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--light);
-            color: var(--dark);
-            transition: var(--transition);
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .icon-button:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .back-nav {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--dark);
-            text-decoration: none;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            transition: var(--transition);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-
-        .back-nav:hover {
-            color: var(--primary);
-            background: rgba(48, 213, 200, 0.1);
-        }
-
-        .page-title {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .page-title h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .page-title p {
-            color: var(--gray);
-            font-size: 1.1rem;
-        }
-
-        /* Card Styles */
-        .card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            margin-bottom: 2rem;
-            animation: fadeInUp 0.5s ease forwards;
-            opacity: 0;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-header {
-            padding: 1.5rem;
-            background: linear-gradient(90deg, var(--primary-light), var(--primary));
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-header h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-        }
-
-        .card-content {
-            padding: 2rem;
-        }
-
-        /* Form Styles */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: var(--transition);
-            background-color: #f8fafc;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(48, 213, 200, 0.2);
-            background-color: white;
-        }
-
-        .form-input:disabled {
-            background-color: #f1f5f9;
-            color: #64748b;
-            cursor: not-allowed;
-        }
-
-        .password-input-container {
-            position: relative;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--gray);
-        }
-
-        /* Button Styles */
-        .btn-group {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            margin: 1.5rem 0;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.875rem 1.5rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background-color: #e2e8f0;
-            color: var(--dark);
-        }
-
-        .btn-secondary:hover {
-            background-color: #cbd5e1;
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #38a169;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background-color: var(--secondary);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #e53e3e;
-            transform: translateY(-2px);
-        }
-
-        .btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        /* Message Styles */
-        .message-container {
-            margin-bottom: 1.5rem;
-        }
-
-        .message {
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .message-success {
-            background-color: #f0fff4;
-            color: #2f855a;
-            border-left: 4px solid var(--success);
-        }
-
-        .message-error {
-            background-color: #fff5f5;
-            color: #c53030;
-            border-left: 4px solid var(--secondary);
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 1rem;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            animation: modalFadeIn 0.3s ease;
-        }
-
-        .modal-header {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--dark);
-            text-align: center;
-        }
-
-        .modal-body {
-            font-size: 1rem;
-            color: var(--gray);
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: center;
-            gap: 0.75rem;
-        }
-
-        /* Password Strength Indicator */
-        .password-strength {
-            height: 5px;
-            margin-top: 0.5rem;
-            border-radius: 3px;
-            transition: var(--transition);
-        }
-
-        .strength-weak {
-            background-color: var(--secondary);
-            width: 33%;
-        }
-
-        .strength-medium {
-            background-color: var(--warning);
-            width: 66%;
-        }
-
-        .strength-strong {
-            background-color: var(--success);
-            width: 100%;
-        }
-
-        .strength-text {
-            font-size: 0.8rem;
-            margin-top: 0.25rem;
-            text-align: right;
-        }
-
-        /* Loading Animation */
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        /* Header Back Button Styles */
-        .header-back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            color: var(--primary-dark);
-            font-weight: 600;
-            font-size: 1rem;
-            padding: 0.6rem 1.2rem;
-            border-radius: 50px; /* Pill shape */
-            transition: var(--transition);
-            background-color: rgba(48, 213, 200, 0.1); /* Light turquoise bg */
-            border: 1px solid transparent;
-        }
-
-        .header-back-btn:hover {
-            background-color: var(--primary);
-            color: white;
-            transform: translateX(-5px); /* Slight slide to the left effect */
-            box-shadow: 0 4px 10px rgba(48, 213, 200, 0.3);
-        }
-
-        .header-back-btn i {
-            font-size: 0.9rem;
-        }
-
-        /* Animations */
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header {
-                padding: 1rem;
-            }
-
-            .header img {
-                height: 40px;
-            }
-
-            .container {
-                padding: 0 1rem;
-                margin: 1.5rem auto;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .btn-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .btn {
-                width: 100%;
-            }
-
-            .page-title h1 {
-                font-size: 2.2rem;
-                font-weight: 700;
-                margin-bottom: 0.5rem;
-                background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .modal-content {
-                padding: 1.5rem;
-            }
-
-            .modal-footer {
-                flex-direction: column;
-            }
-
-            .page-title h1 {
-                font-size: 1.5rem;
-            }
-
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .card-header h2 {
-                font-size: 1.2rem;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f4f4f4 0%, #e6f7f5 100%); color: var(--dark); min-height: 100vh; line-height: 1.6; }
+        
+        .header { padding: 1rem 2rem; background-color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); position: sticky; top: 0; z-index: 100; }
+        .header img { height: 50px; transition: var(--transition); }
+        .header img:hover { transform: scale(1.05); }
+        .user-menu { display: flex; align-items: center; gap: 1rem; }
+        .icon-button { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--light); color: var(--dark); transition: var(--transition); cursor: pointer; text-decoration: none; }
+        .icon-button:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+        
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem; }
+        .back-nav { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--dark); text-decoration: none; font-weight: 500; margin-bottom: 1.5rem; transition: var(--transition); padding: 0.5rem 1rem; border-radius: 8px; }
+        .back-nav:hover { color: var(--primary); background: rgba(48, 213, 200, 0.1); }
+        
+        .page-title { text-align: center; margin-bottom: 2.5rem; }
+        .page-title h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(90deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .page-title p { color: var(--gray); font-size: 1.1rem; }
+        
+        .card { background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--card-shadow); transition: var(--transition); margin-bottom: 2rem; animation: fadeInUp 0.5s ease forwards; opacity: 0; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15); }
+        .card-header { padding: 1.5rem; background: linear-gradient(90deg, var(--primary-light), var(--primary)); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h2 { font-size: 1.4rem; font-weight: 600; }
+        .card-content { padding: 2rem; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 500; color: var(--dark); margin-bottom: 0.5rem; }
+        .form-input { width: 100%; padding: 0.875rem 1rem; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 1rem; transition: var(--transition); background-color: #f8fafc; font-family: 'Poppins', sans-serif; }
+        .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(48, 213, 200, 0.2); background-color: white; }
+        .form-input:disabled { background-color: #f1f5f9; color: #64748b; cursor: not-allowed; }
+        .password-input-container { position: relative; }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--gray); }
+        
+        .btn-group { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.5rem 0; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.875rem 1.5rem; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: var(--transition); font-family: 'Poppins', sans-serif; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        .btn-secondary { background-color: #e2e8f0; color: var(--dark); }
+        .btn-secondary:hover { background-color: #cbd5e1; transform: translateY(-2px); }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: #38a169; transform: translateY(-2px); }
+        .btn-danger { background-color: var(--secondary); color: white; }
+        .btn-danger:hover { background-color: #e53e3e; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
+        
+        .message-container { margin-bottom: 1.5rem; }
+        .message { padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem; animation: fadeIn 0.5s ease; }
+        .message-success { background-color: #f0fff4; color: #2f855a; border-left: 4px solid var(--success); }
+        .message-error { background-color: #fff5f5; color: #c53030; border-left: 4px solid var(--secondary); }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
+        .modal-content { background-color: white; padding: 2rem; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: modalFadeIn 0.3s ease; }
+        .modal-header { font-size: 1.4rem; font-weight: 600; margin-bottom: 1rem; color: var(--dark); text-align: center; }
+        .modal-body { font-size: 1rem; color: var(--gray); margin-bottom: 1.5rem; line-height: 1.5; }
+        .modal-footer { display: flex; justify-content: center; gap: 0.75rem; }
+        
+        .password-strength { height: 5px; margin-top: 0.5rem; border-radius: 3px; transition: var(--transition); }
+        .strength-weak { background-color: var(--secondary); width: 33%; }
+        .strength-medium { background-color: var(--warning); width: 66%; }
+        .strength-strong { background-color: var(--success); width: 100%; }
+        .strength-text { font-size: 0.8rem; margin-top: 0.25rem; text-align: right; }
+        
+        .spinner { width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
+        
+        .header-back-btn { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--primary-dark); font-weight: 600; font-size: 1rem; padding: 0.6rem 1.2rem; border-radius: 50px; transition: var(--transition); background-color: rgba(48, 213, 200, 0.1); border: 1px solid transparent; }
+        .header-back-btn:hover { background-color: var(--primary); color: white; transform: translateX(-5px); box-shadow: 0 4px 10px rgba(48, 213, 200, 0.3); }
+        .header-back-btn i { font-size: 0.9rem; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @media (max-width: 768px) { .header { padding: 1rem; } .header img { height: 40px; } .container { padding: 0 1rem; margin: 1.5rem auto; } .form-grid { grid-template-columns: 1fr; } .btn-group { flex-direction: column; align-items: stretch; } .btn { width: 100%; } .page-title h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(90deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } }
+        @media (max-width: 480px) { .modal-content { padding: 1.5rem; } .modal-footer { flex-direction: column; } .page-title h1 { font-size: 1.5rem; } .card-header { flex-direction: column; align-items: flex-start; gap: 1rem; } .card-header h2 { font-size: 1.2rem; } }
     </style>
 </head>
 
@@ -559,8 +127,7 @@
         <div class="message-container">
             {% for message in messages %}
             <div class="message {% if message.tags == 'success' %}message-success{% else %}message-error{% endif %}">
-                <i
-                    class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
                 {{ message }}
             </div>
             {% endfor %}
@@ -610,83 +177,77 @@
                             <input type="text" id="username" name="username" class="form-input"
                                 value="{{ firebase_user.username }}" disabled>
                         </div>
-                        <!-- <div class="form-group">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" id="password" name="password" class="form-input" value="********" disabled>
-                        </div> -->
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div class="modal" id="confirmationModal">
         <div class="modal-content">
             <div class="modal-header">Confirm Action</div>
             <div class="modal-body" id="modalBody">Are you sure you want to proceed?</div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="closePasswordModal">Cancel</button>
-                <button type="submit" class="btn btn-primary" form="passwordForm" id="submitPasswordChange">Change
-                    Password</button>
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmationModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmProceedBtn">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- Change Password Modal -->
     <div class="modal" id="passwordModal">
-    <div class="modal-content">
-        <div class="modal-header">Change Password</div>
-        
-        <form id="passwordForm" method="POST" action="{% url 'change_password' %}">
-            {% csrf_token %}
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="current_password" class="form-label">Current Password</label>
-                    <div class="password-input-container">
-                        <input type="password" id="current_password" name="current_password" class="form-input" required>
-                        <span class="toggle-password" onclick="togglePassword('current_password')">
-                            <i class="fas fa-eye"></i>
-                        </span>
+        <div class="modal-content">
+            <div class="modal-header">Change Password</div>
+            
+            <form id="passwordForm" method="POST" action="{% url 'change_password' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <div class="password-input-container">
+                            <input type="password" id="current_password" name="current_password" class="form-input" required>
+                            <span class="toggle-password" onclick="togglePassword('current_password')">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <div class="password-input-container">
+                            <input type="password" id="new_password" name="new_password" class="form-input" required onkeyup="checkPasswordStrength(this.value)">
+                            <span class="toggle-password" onclick="togglePassword('new_password')">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                        <div class="password-strength" id="passwordStrength"></div>
+                        <div class="strength-text" id="strengthText"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <div class="password-input-container">
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
+                            <span class="toggle-password" onclick="togglePassword('confirm_password')">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                        <div id="passwordMatch" class="strength-text"></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="new_password" class="form-label">New Password</label>
-                    <div class="password-input-container">
-                        <input type="password" id="new_password" name="new_password" class="form-input" required onkeyup="checkPasswordStrength(this.value)">
-                        <span class="toggle-password" onclick="togglePassword('new_password')">
-                            <i class="fas fa-eye"></i>
-                        </span>
-                    </div>
-                    <div class="password-strength" id="passwordStrength"></div>
-                    <div class="strength-text" id="strengthText"></div>
-                </div>
-                <div class="form-group">
-                    <label for="confirm_password" class="form-label">Confirm New Password</label>
-                    <div class="password-input-container">
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
-                        <span class="toggle-password" onclick="togglePassword('confirm_password')">
-                            <i class="fas fa-eye"></i>
-                        </span>
-                    </div>
-                    <div id="passwordMatch" class="strength-text"></div>
-                </div>
-            </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="closePasswordModal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Change Password</button>
-            </div>
-        </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change Password</button>
+                </div>
+            </form>
         </div>
-</div>
+    </div>
+
 <script>
-    // --- 1. Global Helper Functions (Exposed for HTML attributes like onclick/onkeyup) ---
+    // --- 1. Global Helper Functions ---
     
+    // Toggle Password Visibility
     window.togglePassword = function(inputId) {
         const input = document.getElementById(inputId);
         const eyeIcon = input.nextElementSibling.querySelector('i');
-
         if (input.type === 'password') {
             input.type = 'text';
             eyeIcon.classList.remove('fa-eye');
@@ -698,16 +259,38 @@
         }
     };
 
+    // CLOSE PASSWORD MODAL FUNCTION (Called by Cancel Button)
+    window.closePasswordModal = function() {
+        const modal = document.getElementById("passwordModal");
+        if(modal) modal.style.display = "none";
+        
+        // Cleanup inputs
+        const form = document.getElementById('passwordForm');
+        if(form) form.reset();
+        
+        // Reset strength indicators
+        const strengthBar = document.getElementById('passwordStrength');
+        if(strengthBar) strengthBar.className = 'password-strength';
+        const strengthText = document.getElementById('strengthText');
+        if(strengthText) strengthText.textContent = '';
+        const passMatch = document.getElementById('passwordMatch');
+        if(passMatch) passMatch.textContent = '';
+    };
+
+    // CLOSE CONFIRMATION MODAL FUNCTION (Called by Cancel Button)
+    window.closeConfirmationModal = function() {
+        const modal = document.getElementById("confirmationModal");
+        if(modal) modal.style.display = "none";
+    };
+
     window.checkPasswordStrength = function(password) {
         const strengthBar = document.getElementById('passwordStrength');
         const strengthText = document.getElementById('strengthText');
         
-        // Safety check if elements exist
         if (!strengthBar || !strengthText) return;
 
         strengthBar.className = 'password-strength';
         strengthText.textContent = '';
-
         if (password.length === 0) return;
 
         let strength = 0;
@@ -735,17 +318,13 @@
         const newPassInput = document.getElementById('new_password');
         const confirmPassInput = document.getElementById('confirm_password');
         const matchIndicator = document.getElementById('passwordMatch');
-
         if (!newPassInput || !confirmPassInput || !matchIndicator) return;
-
         const newPassword = newPassInput.value;
         const confirmPassword = confirmPassInput.value;
-
         if (confirmPassword.length === 0) {
             matchIndicator.textContent = '';
             return false;
         }
-
         if (newPassword === confirmPassword) {
             matchIndicator.textContent = 'Passwords match';
             matchIndicator.style.color = 'var(--success)';
@@ -757,25 +336,20 @@
         }
     };
 
-    // --- 2. Main Event Listeners (Runs when page is ready) ---
+    // --- 2. Main Event Listeners ---
     document.addEventListener("DOMContentLoaded", function() {
 
         // --- Confirmation Modal Logic ---
-        const modal = document.getElementById("confirmationModal");
-        const confirmBtn = document.getElementById("confirmBtn");
-        const cancelBtn = document.getElementById("cancelBtn");
+        const confirmModal = document.getElementById("confirmationModal");
+        const confirmBtn = document.getElementById("confirmProceedBtn"); // Updated ID
         const modalBody = document.getElementById("modalBody");
 
-        function openModal(message) {
+        function openConfirmModal(message) {
             if(modalBody) modalBody.textContent = message;
-            if(modal) modal.style.display = "flex";
+            if(confirmModal) confirmModal.style.display = "flex";
         }
-        function closeModal() {
-            if(modal) modal.style.display = "none";
-        }
-        if(cancelBtn) cancelBtn.addEventListener("click", closeModal);
 
-        // --- Edit Profile Logic (Your Existing Logic) ---
+        // --- Edit Profile Logic ---
         const editBtn = document.getElementById("editButton");
         const saveBtn = document.getElementById("saveButton");
         const discardBtn = document.getElementById("discardButton");
@@ -794,42 +368,74 @@
         if(saveBtn) {
             saveBtn.addEventListener("click", function (event) {
                 event.preventDefault();
-                openModal("Are you sure you want to save these changes?");
+                openConfirmModal("Are you sure you want to save these changes?");
                 
-                // Define what happens when user clicks "Confirm" in the modal
-                confirmBtn.onclick = function () {
-                    saveBtn.innerHTML = '<div class="spinner"></div> Saving...';
-                    saveBtn.disabled = true;
-
-                    setTimeout(() => {
-                        if(editForm) editForm.submit();
-                    }, 500); // Small delay to show spinner
-                    closeModal();
-                };
+                // Define action for Confirm button
+                if(confirmBtn) {
+                    confirmBtn.onclick = function () {
+                        saveBtn.innerHTML = '<div class="spinner"></div> Saving...';
+                        saveBtn.disabled = true;
+                        setTimeout(() => {
+                            if(editForm) editForm.submit();
+                        }, 500);
+                        closeConfirmationModal();
+                    };
+                }
             });
         }
 
+        // --- Edit Profile Logic ---
+   
+
+        if(editBtn) {
+            editBtn.addEventListener("click", function () {
+                let inputs = document.querySelectorAll(".form-input");
+                inputs.forEach(input => input.removeAttribute("disabled"));
+                editBtn.style.display = "none";
+                saveBtn.style.display = "flex";
+                discardBtn.style.display = "flex";
+            });
+        }
+
+        if(saveBtn) {
+            saveBtn.addEventListener("click", function (event) {
+                event.preventDefault();
+                openConfirmModal("Are you sure you want to save these changes?");
+                
+                if(confirmBtn) {
+                    confirmBtn.onclick = function () {
+                        saveBtn.innerHTML = '<div class="spinner"></div> Saving...';
+                        saveBtn.disabled = true;
+                        setTimeout(() => {
+                            if(editForm) editForm.submit();
+                        }, 500);
+                        closeConfirmationModal();
+                    };
+                }
+            });
+        }
+
+        // UPDATED: Discard Button now acts as an immediate "Cancel"
         if(discardBtn) {
             discardBtn.addEventListener("click", function () {
-                openModal("Are you sure you want to discard your changes?");
-                
-                confirmBtn.onclick = function () {
-                    let inputs = document.querySelectorAll(".form-input");
-                    inputs.forEach(input => input.setAttribute("disabled", "true"));
-                    editBtn.style.display = "flex";
-                    saveBtn.style.display = "none";
-                    discardBtn.style.display = "none";
-                    closeModal();
-                    // Optionally reset form values here if needed
-                    // if(editForm) editForm.reset(); 
-                };
+                // 1. Reset the form to original values
+                if(editForm) editForm.reset();
+
+                // 2. Disable inputs again
+                let inputs = document.querySelectorAll(".form-input");
+                inputs.forEach(input => input.setAttribute("disabled", "true"));
+
+                // 3. Toggle buttons back to initial state
+                editBtn.style.display = "flex";
+                saveBtn.style.display = "none";
+                discardBtn.style.display = "none";
             });
         }
+        
 
         // --- Password Modal Logic ---
         const passwordModal = document.getElementById("passwordModal");
         const changePasswordButton = document.getElementById("changePasswordButton");
-        const closePasswordModal = document.getElementById("closePasswordModal");
         const passwordForm = document.getElementById("passwordForm");
 
         // Open Password Modal
@@ -845,13 +451,6 @@
                 if(strengthText) strengthText.textContent = '';
                 const passMatch = document.getElementById('passwordMatch');
                 if(passMatch) passMatch.textContent = '';
-            });
-        }
-
-        // Close Password Modal (Cancel Button)
-        if(closePasswordModal) {
-            closePasswordModal.addEventListener("click", function () {
-                passwordModal.style.display = "none";
             });
         }
 
@@ -871,8 +470,8 @@
         
         // Close modals when clicking outside
         window.addEventListener('click', function (event) {
-            if (event.target === modal) closeModal();
-            if (event.target === passwordModal) passwordModal.style.display = "none";
+            if (event.target === confirmModal) closeConfirmationModal();
+            if (event.target === passwordModal) closePasswordModal();
         });
 
         // Auto-hide messages after 5 seconds
@@ -887,5 +486,4 @@
 </script>
 
 </body>
-
 </html>

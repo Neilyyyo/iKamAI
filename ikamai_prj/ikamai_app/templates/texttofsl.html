@@ -479,10 +479,91 @@
             font-size: 1.2rem;
         }
 
-        .modal-footer {
+          .modal-footer {
             display: flex;
             justify-content: flex-end;
+            margin-top: auto;
         }
+       /* Dictionary Modal — Enhanced UI */
+#dictionaryModal .modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 18px;
+    width: 90%;                  /* Wider modal */
+    max-width: 900px;            /* Increased width */
+    max-height: 85vh;            /* Taller */
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+    animation: modalFadeIn 0.3s ease;
+}
+
+/* Scroll section */
+.modal-body-scroll {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Improve section headers */
+.dict-section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 2rem 0 1rem;
+    color: #2DAA9E;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Wider grid with better spacing */
+.dict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+/* Items improved */
+.dict-item-box {
+    background: #f0f9f8;
+    padding: 0.9rem 0.5rem;
+    border: 1px solid #d6e8e7;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: 0.25s ease;
+}
+
+.dict-item-box:hover {
+    background: #30D5C8;
+    color: white;
+    border-color: #30D5C8;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(48, 213, 200, 0.25);
+}
+
+/* Modal header */
+.modal-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2D3748;
+}
+
+/* Footer */
+.modal-footer {
+    border-top: 1px solid #e5e5e5;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
 
         /* Header Back Button Styles */
         .header-back-btn {
@@ -580,6 +661,9 @@
             <span>Back to Home</span>
         </a>
         <div class="header-right">
+            <div class="nav-icon" id="dict-btn" title="Sign Dictionary">
+                <i class="fas fa-book"></i>
+            </div>
             <div class="nav-icon" id="help-btn">
                 <i class="fas fa-question-circle"></i>
             </div>
@@ -605,8 +689,8 @@
                             <i class="fas fa-film"></i> Playing: {{ query }}
                         </h3> -->
                         <div class="video-container">
-                            <video class="video-player" controls id="sign-video">
-                                <source src="{{ video_url }}" type="video/mp4" id="video-source">
+                            <video class="video-player" controls autoplay muted id="sign-video">
+                                <source src="{{ video_url }}" type="video/*" id="video-source">
                                 Your browser does not support the video tag.
                             </video>
                         </div>
@@ -721,6 +805,122 @@
     </div>
 </div>
 
+    <div class="modal" id="dictionaryModal">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-book"></i> Sign Dictionary
+                </h3>
+            </div>
+
+            <!-- Scrollable Body -->
+            <div class="modal-body-scroll">
+
+                <!-- Available Words Section -->
+                <div class="dict-section-title">
+                    <i class="fas fa-font"></i> Available Words
+                </div>
+
+                <div class="dict-grid">
+                    <div class="dict-item-box">ASL</div>
+                    <div class="dict-item-box">Bad</div>
+                    <div class="dict-item-box">Beautiful</div>
+                    <div class="dict-item-box">Brother</div>
+                    <div class="dict-item-box">Deaf</div>
+                    <div class="dict-item-box">Eat</div>
+                    <div class="dict-item-box">Excuse</div>
+                    <div class="dict-item-box">Father</div>
+                    <div class="dict-item-box">Friend</div>
+                    <div class="dict-item-box">Good Afternoon</div>
+                    <div class="dict-item-box">Good Morning</div>
+                    <div class="dict-item-box">Goodbye</div>
+                    <div class="dict-item-box">Handsome</div>
+                    <div class="dict-item-box">Help</div>
+                    <div class="dict-item-box">Hello</div>
+                    <div class="dict-item-box">House</div>
+                    <div class="dict-item-box">I Love You</div>
+                    <div class="dict-item-box">I Miss You</div>
+                    <div class="dict-item-box">Love</div>
+                    <div class="dict-item-box">Money</div>
+                    <div class="dict-item-box">Mother</div>
+                    <div class="dict-item-box">No</div>
+                    <div class="dict-item-box">Please</div>
+                    <div class="dict-item-box">Sad</div>
+                    <div class="dict-item-box">Sick</div>
+                    <div class="dict-item-box">Sister</div>
+                    <div class="dict-item-box">Sorry</div>
+                    <div class="dict-item-box">Stop</div>
+                    <div class="dict-item-box">Thank You</div>
+                    <div class="dict-item-box">Tired</div>
+                    <div class="dict-item-box">Understand</div>
+                    <div class="dict-item-box">Yes</div>
+                </div>
+
+
+                <!-- Alphabet Section -->
+                <div class="dict-section-title">
+                    <i class="fas fa-font"></i> Alphabet
+                </div>
+
+                <div class="dict-grid">
+                    <div class="dict-item-box">A</div>
+                    <div class="dict-item-box">B</div>
+                    <div class="dict-item-box">C</div>
+                    <div class="dict-item-box">D</div>
+                    <div class="dict-item-box">E</div>
+                    <div class="dict-item-box">F</div>
+                    <div class="dict-item-box">G</div>
+                    <div class="dict-item-box">H</div>
+                    <div class="dict-item-box">I</div>
+                    <div class="dict-item-box">J</div>
+                    <div class="dict-item-box">K</div>
+                    <div class="dict-item-box">L</div>
+                    <div class="dict-item-box">M</div>
+                    <div class="dict-item-box">N</div>
+                    <div class="dict-item-box">O</div>
+                    <div class="dict-item-box">P</div>
+                    <div class="dict-item-box">Q</div>
+                    <div class="dict-item-box">R</div>
+                    <div class="dict-item-box">S</div>
+                    <div class="dict-item-box">T</div>
+                    <div class="dict-item-box">U</div>
+                    <div class="dict-item-box">V</div>
+                    <div class="dict-item-box">W</div>
+                    <div class="dict-item-box">X</div>
+                    <div class="dict-item-box">Y</div>
+                    <div class="dict-item-box">Z</div>
+                </div>
+
+                <!-- Numbers Section -->
+                <div class="dict-section-title">
+                    <i class="fas fa-font"></i> Numbers
+                </div>
+
+                <div class="dict-grid">
+                    <div class="dict-item-box">1</div>
+                    <div class="dict-item-box">2</div>
+                    <div class="dict-item-box">3</div>
+                    <div class="dict-item-box">4</div>
+                    <div class="dict-item-box">5</div>
+                    <div class="dict-item-box">6</div>
+                    <div class="dict-item-box">7</div>
+                    <div class="dict-item-box">8</div>
+                    <div class="dict-item-box">9</div>
+                    <div class="dict-item-box">10</div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeDictFooterBtn">Close</button>
+            </div>
+
+        </div>
+    </div>
+    
 <script>
     // DOM Elements
     const searchForm = document.getElementById('search-form');
@@ -733,6 +933,12 @@
     const notification = document.getElementById('notification');
     const notificationMessage = document.getElementById('notification-message');
 
+    const dictBtn = document.getElementById("dict-btn");
+        const dictionaryModal = document.getElementById("dictionaryModal");
+        const closeDictBtn = document.getElementById("closeDictBtn");
+        const closeDictFooterBtn = document.getElementById("closeDictFooterBtn");
+        const instructionModal = document.getElementById("instructionModal");
+const proceedBtn = document.getElementById("proceedBtn");
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function () {
         const djangoData = {
@@ -752,6 +958,11 @@
                 localStorage.setItem("seenInstructionModal", "true");
             });
         }
+
+        proceedBtn.addEventListener("click", function () {
+    instructionModal.style.display = "none";
+    localStorage.setItem("seenInstructionModal", "true");
+});
 
         // Add event listener for help button → always re-open modal
         document.getElementById("help-btn").addEventListener("click", function () {
@@ -842,4 +1053,19 @@
         document.getElementById('search-input').value = query;
         document.getElementById('search-form').submit();
     }
+
+    dictBtn.addEventListener("click", () => { dictionaryModal.style.display = "flex"; });
+
+const closeDictionary = () => { dictionaryModal.style.display = "none"; };
+
+closeDictFooterBtn.addEventListener("click", closeDictionary);
+
+
+        proceedBtn.addEventListener("click", function () {
+    instructionModal.style.display = "none";
+    localStorage.setItem("seenInstructionModal", "true");
+});
+
+
+    
 </script>
