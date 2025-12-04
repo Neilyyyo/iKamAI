@@ -1,125 +1,166 @@
+# utils.py
 import cv2
 import numpy as np
-
-try:
-    from tflite_runtime.interpreter import Interpreter
-except ImportError:
-    import tensorflow.lite as tflite
-    Interpreter = tflite.Interpreter
-
 import mediapipe as mp
+import os
 import base64
-import io
-from PIL import Image
+import threading
+from tensorflow.keras.models import load_model
+
+# --- 1. Keypoints Extraction Logic ---
+
+def draw_landmarks(image, results):
+    mp_holistic = mp.solutions.holistic
+    mp_drawing = mp.solutions.drawing_utils
+    
+    if results.left_hand_landmarks:
+        mp_drawing.draw_landmarks(
+            image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+    if results.right_hand_landmarks:
+        mp_drawing.draw_landmarks(
+            image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+    if results.pose_landmarks:
+        mp_drawing.draw_landmarks(
+            image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
+
+def image_process(image, model):
+    image.flags.writeable = False
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    results = model.process(image)
+    image.flags.writeable = True
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    return results
+
+def keypoint_extraction(results):
+    if results.left_hand_landmarks:
+        lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten()
+    else:
+        lh = np.zeros(63)
+
+    if results.right_hand_landmarks:
+        rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten()
+    else:
+        rh = np.zeros(63)
+        
+    return np.concatenate([lh, rh])
+
+# --- 2. Word Predictor Class (Updated with Stabilization) ---
 
 class WordPredictor:
-    def __init__(self, model_path="model.tflite", threshold=0.8):
-        self.interpreter = Interpreter(model_path=model_path)
-        self.interpreter.allocate_tensors()
-
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
-
-        self.actions = np.array([
-            'hello', 'yes', 'no', 'thanks',
-            'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-            'eat', 'wrong', 'sorry', 'like', 'iloveyou','ihateyou', 'eat'
-        ])
-
-        self.threshold = threshold
-        self.sequence = []
-        self.sentence = []
-        self.accuracy = []
-        self.predictions = []
-
-        self.mp_hands = mp.solutions.hands
+    def __init__(self, model_path, actions_list):
+        print(f"Loading Word Model from: {model_path}")
+        self.model = load_model(model_path)
+        self.actions = np.array(actions_list)
         
-        # --- FIX: Initialize Hands HERE, not in the loop ---
-        self.hands = self.mp_hands.Hands(
-            model_complexity=0, # Keep 0 for speed on server
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
+        self.holistic = mp.solutions.holistic.Holistic(
+            min_detection_confidence=0.70, 
+            min_tracking_confidence=0.70
         )
-        # ---------------------------------------------------
+        
+        self.lock = threading.Lock()
+        
+        # Prediction Variables
+        self.sequence = []
+        self.current_text = ""
+        self.last_prediction = None
+        
+        # Thresholds
+        self.threshold = 0.98
+        self.frames_required = 20
+        
+        # Stabilization Variables (Matches RealTime.py)
+        self.hand_present = False
+        self.skip_counter = 0
+        self.SKIP_FRAMES = 2 # Skip first 5 frames of a new gesture
+        
+    def process_web_frame(self, base64_image):
+        result_data = {
+            "status": "error",
+            "message": "Processing failed",
+            "current_word": self.current_text,
+            "prediction_made": False
+        }
+
+        try:
+            if ',' in base64_image:
+                base64_image = base64_image.split(',')[1]
+            image_bytes = base64.b64decode(base64_image)
+            np_arr = np.frombuffer(image_bytes, np.uint8)
+            img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            
+            if img is None:
+                return {"status": "error", "message": "Failed to decode image"}
+        except Exception as e:
+            return {"status": "error", "message": f"Decode error: {str(e)}"}
+
+        with self.lock: 
+            try:
+                results = image_process(img, self.holistic)
+                
+                # Check for Hands
+                hand_detected = results.left_hand_landmarks or results.right_hand_landmarks
+                confidence = 0.0
+                prediction_made = False
+
+                if hand_detected:
+                    # --- Stabilization Logic Start ---
+                    if not self.hand_present:
+                        # Hand just appeared, start skipping
+                        self.hand_present = True
+                        self.skip_counter = self.SKIP_FRAMES
+                    
+                    if self.skip_counter > 0:
+                        self.skip_counter -= 1
+                        # Return early while stabilizing
+                        return {
+                            "status": "stabilizing", 
+                            "current_word": self.current_text,
+                            "prediction_made": False
+                        }
+                    # --- Stabilization Logic End ---
+
+                    # Extract Keypoints
+                    keypoints = keypoint_extraction(results)
+                    self.sequence.append(keypoints)
+                    
+                    if len(self.sequence) == self.frames_required:
+                        res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
+                        confidence = np.max(res)
+                        
+                        if confidence >= self.threshold:
+                            predicted_index = np.argmax(res)
+                            predicted_action = self.actions[predicted_index]
+                            
+                            if predicted_action != self.last_prediction:
+                                self.current_text = predicted_action
+                                self.last_prediction = predicted_action
+                                prediction_made = True
+                        
+                        self.sequence = [] # Reset after prediction attempt
+
+                else:
+                    # Reset everything if hand is lost
+                    self.hand_present = False
+                    self.sequence = []
+
+                result_data = {
+                    "status": "success",
+                    "current_word": self.current_text,
+                    "confidence": float(confidence),
+                    "frames_captured": len(self.sequence),
+                    "prediction_made": prediction_made
+                }
+
+            except Exception as e:
+                print(f"Error in processing: {e}")
+                result_data["message"] = str(e)
+
+        return result_data
 
     def reset(self):
-        self.sequence = []
-        self.sentence = []
-        self.accuracy = []
-        self.predictions = []
-
-    def extract_keypoints(self, results):
-        if results.multi_hand_landmarks:
-            hand = results.multi_hand_landmarks[0]
-            return np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten()
-        else:
-            return np.zeros(21 * 3)
-
-    def mediapipe_detection(self, image, model):
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image.flags.writeable = False
-        results = model.process(image)
-        image.flags.writeable = True
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        return image, results
-
-    def process_web_frame(self, image_data_base64):
-        try:
-            img_str = image_data_base64.split(',')[1]
-            decoded = base64.b64decode(img_str)
-            image = Image.open(io.BytesIO(decoded))
-            frame = np.array(image)
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
-            cropframe = frame[40:400, 0:300]
-
-            # --- FIX: Use the self.hands instance we created in __init__ ---
-            image, results = self.mediapipe_detection(cropframe, self.hands)
-            # ---------------------------------------------------------------
-
-            keypoints = self.extract_keypoints(results)
-            self.sequence.append(keypoints)
-            self.sequence = self.sequence[-30:]
-
-            if len(self.sequence) == 30:
-                input_data = np.expand_dims(self.sequence, axis=0).astype(np.float32)
-                self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
-                self.interpreter.invoke()
-                res = self.interpreter.get_tensor(self.output_details[0]['index'])[0]
-
-                self.predictions.append(np.argmax(res))
-
-                if np.unique(self.predictions[-15:])[0] == np.argmax(res):
-                    if res[np.argmax(res)] > self.threshold:
-                        pred_word = self.actions[np.argmax(res)]
-                        confidence = round(res[np.argmax(res)] * 100, 2)
-
-                        if len(self.sentence) > 0:
-                            if pred_word != self.sentence[-1]:
-                                self.sentence.append(pred_word)
-                                self.accuracy.append(confidence)
-                        else:
-                            self.sentence.append(pred_word)
-                            self.accuracy.append(confidence)
-
-                if len(self.sentence) > 1:
-                    self.sentence = self.sentence[-1:]
-                    self.accuracy = self.accuracy[-1:]
-            
-            return self.get_status()
-
-        except Exception as e:
-            print(f"Error processing frame: {e}")
-            return self.get_status()
-
-    def get_status(self):
-        if self.sentence and self.accuracy:
-            return {
-                'prediction': self.sentence[-1],
-                'accuracy': f"{self.accuracy[-1]}%"
-            }
-        else:
-            return {
-                'prediction': 'None',
-                'accuracy': '0%'
-            }
+        with self.lock:
+            self.sequence = []
+            self.current_text = ""
+            self.last_prediction = None
+            self.hand_present = False
+            self.skip_counter = 0

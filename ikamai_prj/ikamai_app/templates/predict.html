@@ -374,13 +374,15 @@
             max-width: 500px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             animation: modalFadeIn 0.3s ease;
-            max-height: 90vh; /* Ensure modal doesn't overflow screen */
+            max-height: 90vh;
+            /* Ensure modal doesn't overflow screen */
             display: flex;
             flex-direction: column;
         }
 
         .modal-body-scroll {
-            overflow-y: auto; /* Enable scrolling for long lists */
+            overflow-y: auto;
+            /* Enable scrolling for long lists */
             padding-right: 5px;
             margin-bottom: 1rem;
         }
@@ -446,7 +448,8 @@
             justify-content: flex-end;
             margin-top: auto;
         }
-       .dict-section-title {
+
+        .dict-section-title {
             font-size: 1.1rem;
             font-weight: 600;
             color: var(--primary-dark);
@@ -459,7 +462,7 @@
         .dict-grid {
             display: grid;
             /* CHANGE HERE: repeat(3, 1fr) forces exactly 3 columns */
-            grid-template-columns: repeat(3, 1fr); 
+            grid-template-columns: repeat(3, 1fr);
             gap: 0.75rem;
             margin-bottom: 1.5rem;
         }
@@ -507,9 +510,9 @@
 
         .command-item:hover {
             border-color: var(--primary);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
-        
+
         .command-item i {
             font-size: 1.2rem;
             margin-bottom: 0.5rem;
@@ -527,16 +530,19 @@
             font-weight: 600;
             font-size: 1rem;
             padding: 0.6rem 1.2rem;
-            border-radius: 50px; /* Pill shape */
+            border-radius: 50px;
+            /* Pill shape */
             transition: var(--transition);
-            background-color: rgba(48, 213, 200, 0.1); /* Light turquoise bg */
+            background-color: rgba(48, 213, 200, 0.1);
+            /* Light turquoise bg */
             border: 1px solid transparent;
         }
 
         .header-back-btn:hover {
             background-color: var(--primary);
             color: white;
-            transform: translateX(-5px); /* Slight slide to the left effect */
+            transform: translateX(-5px);
+            /* Slight slide to the left effect */
             box-shadow: 0 4px 10px rgba(48, 213, 200, 0.3);
         }
 
@@ -566,14 +572,27 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         @keyframes modalFadeIn {
@@ -581,6 +600,7 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -611,6 +631,7 @@
                 text-align: center;
                 margin-bottom: 1.5rem;
             }
+
             .container {
                 padding-top: 1.2rem;
             }
@@ -631,9 +652,11 @@
             .controls-section {
                 padding: 1.5rem;
             }
+
             .page-title h1 {
                 font-size: 1.5rem;
             }
+
             .page-title p {
                 font-size: 1.2rem;
             }
@@ -653,9 +676,11 @@
             .section-title {
                 font-size: 1.25rem;
             }
+
             .page-title h1 {
                 font-size: 1.5rem;
             }
+
             .card-header h2 {
                 font-size: 1.2rem;
             }
@@ -666,7 +691,7 @@
 <body>
     <header class="header">
         <a href="{% url 'home' %}" class="header-back-btn">
-            <i class="fas fa-chevron-left"></i> 
+            <i class="fas fa-chevron-left"></i>
             <span>Back to Home</span>
         </a>
 
@@ -803,6 +828,10 @@
                     </div>
                     <div>Use the 'Speak' button to hear the predicted sign aloud</div>
                 </li>
+                <li>
+                    <div class="instruction-icon"><i class="fas fa-book"></i></div>
+                    <div>View available hand signs using the <strong>Dictionary</strong> button</div>
+                </li>
             </ul>
 
             <div class="modal-footer">
@@ -813,7 +842,7 @@
         </div>
     </div>
 
-   <!-- Modal Structure -->
+    <!-- Modal Structure -->
     <div class="modal" id="dictionaryModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -826,11 +855,11 @@
             </div>
 
             <div class="modal-body-scroll">
-                
+
                 <div class="dict-section-title">
-                    <i class="fas fa-font"></i> Available Words 
+                    <i class="fas fa-font"></i> Available Words
                 </div>
-                
+
                 <div class="dict-grid">
                     <div class="dict-item-box">Hello</div>
                     <div class="dict-item-box">Thank You</div>
@@ -863,16 +892,12 @@
         let predictionInterval;
         let historyCount = 0;
         let lastPrediction = "None";
-        let stablePrediction = null;
-        let stableCount = 0;
-        const requiredStability = 3; 
+        let isProcessing = false; // Prevent overlapping requests
 
-        // Video and Canvas
+        // DOM Elements
         const video = document.getElementById('videoElement');
         const canvas = document.getElementById('canvasElement');
         const context = canvas.getContext('2d');
-
-        // DOM Elements
         const instructionModal = document.getElementById('instruction-modal');
         const closeModal = document.getElementById('close-modal');
         const startBtn = document.getElementById('start-btn');
@@ -881,14 +906,13 @@
         const recentCount = document.getElementById('recent-count');
         const helpBtn = document.getElementById("help-btn");
 
-        // Dictionary Modal Elements
+        // Dictionary Modal
         const dictBtn = document.getElementById("dict-btn");
         const dictionaryModal = document.getElementById("dictionaryModal");
         const closeDictBtn = document.getElementById("closeDictBtn");
         const closeDictFooterBtn = document.getElementById("closeDictFooterBtn");
 
-
-        // Initialize
+        // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
             instructionModal.style.display = 'flex';
         });
@@ -898,49 +922,41 @@
             startCamera();
         });
 
-        // Instructions Modal Logic
-        closeModal.addEventListener('click', () => { instructionModal.style.display = 'none'; });
-        helpBtn.addEventListener("click", () => { instructionModal.style.display = "flex"; });
+        // Modal Logic
+        closeModal.addEventListener('click', () => instructionModal.style.display = 'none');
+        helpBtn.addEventListener("click", () => instructionModal.style.display = "flex");
+        dictBtn.addEventListener("click", () => dictionaryModal.style.display = "flex");
 
-        // Dictionary Modal Logic
-        dictBtn.addEventListener("click", () => { dictionaryModal.style.display = "flex"; });
-        
-        const closeDictionary = () => { dictionaryModal.style.display = "none"; };
+        const closeDictionary = () => dictionaryModal.style.display = "none";
         closeDictBtn.addEventListener("click", closeDictionary);
         closeDictFooterBtn.addEventListener("click", closeDictionary);
 
-        // Close modals when clicking outside
         window.addEventListener("click", (e) => {
-            if (e.target == dictionaryModal) {
-                dictionaryModal.style.display = "none";
-            }
-            if (e.target == instructionModal) {
-                // optional: prevent closing instructions by clicking outside if you prefer
-                // instructionModal.style.display = "none"; 
-            }
+            if (e.target == dictionaryModal) dictionaryModal.style.display = "none";
         });
-
 
         // --- CAMERA FUNCTIONS ---
         function startCamera() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 640, height: 480, facingMode: "user" } 
+                navigator.mediaDevices.getUserMedia({
+                    video: { width: 320, height: 240, facingMode: "user" } // Request lower res from hardware
                 })
-                .then(function(stream) {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = function(e) {
-                        video.play();
-                        cameraActive = true;
-                        updateUI(true);
-                        // Loop to send frames to backend
-                        predictionInterval = setInterval(processFrame, 500); // 2 FPS roughly
-                    };
-                })
-                .catch(function(err) {
-                    console.error("Camera Error:", err);
-                    updateUI(false);
-                });
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.onloadedmetadata = function (e) {
+                            video.play();
+                            cameraActive = true;
+                            updateUI(true);
+
+                            // SPEED UPDATE: Send frame every 50ms (20 FPS) instead of 100ms
+                            // This fills the 20-frame buffer in 1 second instead of 2 seconds.
+                            predictionInterval = setInterval(processFrame, 50);
+                        };
+                    })
+                    .catch(function (err) {
+                        console.error("Camera Error:", err);
+                        updateUI(false);
+                    });
             }
         }
 
@@ -974,62 +990,64 @@
             }
         }
 
-        // --- PROCESSING & PREDICTION ---
+        // --- PROCESS FRAME ---
         function processFrame() {
             if (!cameraActive) return;
 
-            // Draw current video frame to canvas
-            canvas.width = 640;
-            canvas.height = 480;
-            context.drawImage(video, 0, 0, 640, 480);
-            
-            // Convert to Base64
-            const dataURL = canvas.toDataURL('image/jpeg', 0.6); // 0.6 quality compression
+            // OPTIMIZATION: Reduce resolution for faster upload
+            // MediaPipe works perfectly fine with 320x240 images
+            canvas.width = 320;
+            canvas.height = 240;
 
-            // Send to Backend
-            fetch('/get_prediction/', { 
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": getCookie('csrftoken')
-                },
-                body: "image=" + encodeURIComponent(dataURL)
-            })
-            .then(res => res.json())
-            .then(data => {
-                handlePredictionData(data);
-            })
-            .catch(err => console.error("Error:", err));
+            // Draw video to small canvas
+            context.drawImage(video, 0, 0, 320, 240);
+
+            // Convert to Base64 (Lower quality 0.5 is fine for AI)
+            const dataURL = canvas.toDataURL('image/jpeg', 0.5);
+
+            // Send to Django
+            // We use a flag 'isProcessing' to ensure we don't flood the server
+            // if the network is slower than 50ms
+            if (!isProcessing) {
+                isProcessing = true;
+                fetch('/get_prediction/', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    body: "image=" + encodeURIComponent(dataURL)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        handlePredictionData(data);
+                        isProcessing = false;
+                    })
+                    .catch(err => {
+                        console.error("Error:", err);
+                        isProcessing = false;
+                    });
+            }
         }
 
+        // --- HANDLE RESPONSE ---
         function handlePredictionData(data) {
-            const accuracy = data.accuracy || '0%';
-            const accuracyValue = parseFloat(accuracy) || 0;
+            if (data.status === 'error') return;
 
-            if (data.prediction && data.prediction !== 'None') {
-                if (data.prediction === stablePrediction) {
-                    stableCount++;
-                } else {
-                    stablePrediction = data.prediction;
-                    stableCount = 1;
-                }
+            if (data.prediction_made && data.current_word) {
+                const prediction = data.current_word;
+                const confidenceRaw = data.confidence || 0;
+                const accuracyPercent = (confidenceRaw * 100).toFixed(1) + '%';
 
-                // Stability check
-                if (stableCount >= requiredStability && data.prediction !== lastPrediction) {
-                    document.getElementById('current-prediction').textContent = data.prediction;
-                    document.getElementById('current-accuracy').textContent = accuracy;
-                    if (!isNaN(accuracyValue)) {
-                        document.getElementById('accuracy-fill').style.width = accuracyValue + '%';
-                    }
-                    addToHistory(data.prediction, accuracy);
-                    historyCount++;
-                    recentCount.textContent = historyCount;
-                    lastPrediction = data.prediction;
-                }
-            } else {
-                // Reset/None logic
-                stablePrediction = null;
-                stableCount = 0;
+                document.getElementById('current-prediction').textContent = prediction.toUpperCase();
+                document.getElementById('current-accuracy').textContent = accuracyPercent;
+                document.getElementById('accuracy-fill').style.width = accuracyPercent;
+
+                addToHistory(prediction.toUpperCase(), accuracyPercent);
+
+                historyCount++;
+                recentCount.textContent = historyCount;
+                lastPrediction = prediction;
             }
         }
 
@@ -1041,11 +1059,12 @@
             const timeString = new Date().toLocaleTimeString();
             const historyItem = document.createElement('li');
             historyItem.className = 'history-item';
-            historyItem.innerHTML = `<span class="history-text">${prediction} (${accuracy})</span><span class="history-time">${timeString}</span>`;
+            historyItem.innerHTML = `<span class="history-text">${prediction}</span><span class="history-time">${timeString} - ${accuracy}</span>`;
             historyList.prepend(historyItem);
+
             if (historyList.children.length > 15) historyList.removeChild(historyList.lastChild);
-            
-            // Save to DB
+
+            // Save history
             fetch('/save_translation_words/', {
                 method: 'POST',
                 headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
@@ -1056,11 +1075,11 @@
         function resetPrediction() {
             fetch('/reset_prediction/', {
                 method: 'POST',
-                headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
             }).then(res => res.json()).then(data => {
                 document.getElementById('current-prediction').textContent = 'None';
                 document.getElementById('accuracy-fill').style.width = '0%';
-                lastPrediction = 'None';
+                document.getElementById('current-accuracy').textContent = '0%';
             });
         }
 
@@ -1072,7 +1091,6 @@
             }
         }
 
-        // Helpers & Events
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -1088,10 +1106,8 @@
             return cookieValue;
         }
 
+        // Bind events
         document.getElementById("reset-btn").addEventListener("click", resetPrediction);
         document.getElementById("speak-btn").addEventListener("click", speakText);
         cameraToggleBtn.addEventListener("click", toggleCamera);
     </script>
-</body>
-
-</html>

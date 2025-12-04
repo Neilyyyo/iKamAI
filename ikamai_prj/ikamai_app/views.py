@@ -37,13 +37,9 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 # from google.cloud.firestore_v1 import DocumentSnapshot
-from .utils import WordPredictor
 from django.conf import settings
 import firebase_admin
 from firebase_admin import credentials
-
-
-
 
 db = firestore.client()
 
@@ -462,13 +458,95 @@ def account_view(request):
         return redirect("home")
 
 
+# views.py
+from firebase_admin import firestore
+
 @firebase_login_required
-def fsl(request):
-    return render(request, 'fsltotext.html')
+def sign(request):
+    user_id = request.session.get("uid")
+    history_list = []
+
+    try:
+        if user_id:
+            # Fetch history for "letters" (FSL Page)
+            docs = db.collection("translations") \
+                     .where("user_id", "==", user_id) \
+                     .where("type", "==", "letters") \
+                     .order_by("timestamp", direction=firestore.Query.DESCENDING) \
+                     .limit(10) \
+                     .stream()
+
+            for doc in docs:
+                data = doc.to_dict()
+                
+                # Format timestamp safely
+                ts = data.get("timestamp")
+                formatted_time = ""
+                if ts:
+                    try:
+                        # Try Python datetime format
+                        formatted_time = ts.strftime("%Y-%m-%d %H:%M:%S")
+                    except:
+                        # Fallback for string/other formats
+                        formatted_time = str(ts)
+
+                history_list.append({
+                    "text": data.get("text", ""),
+                    "timestamp": formatted_time
+                })
+
+    except Exception as e:
+        print(f"Error fetching FSL history: {e}")
+
+    return render(request, 'fsltotext.html', {
+        'history_list': history_list
+    })
 
 @firebase_login_required
 def text(request):
-    return render(request, 'texttofsl.html')
+    # 1. Get User ID
+    user_id = request.session.get("uid")
+
+    # 2. Fetch History (Same logic as search_video_view)
+    try:
+        history_docs = db.collection("search_history").where("user_id", "==", user_id).get()
+        
+        history_list = []
+        for doc in history_docs:
+            item = doc.to_dict()
+            email = "Unknown"
+
+            # Optional: Fetch email (can be skipped for speed if not needed in UI)
+            if item.get("user_id"):
+                try:
+                    user_record = firebase_auth.get_user(item.get("user_id"))
+                    email = user_record.email
+                except Exception:
+                    pass
+
+            history_list.append({
+                "query": item.get("query"),
+                "email": email,
+                "timestamp": item.get("timestamp")
+            })
+
+        # 3. Sort by timestamp DESC and keep only 5
+        history_list.sort(key=lambda x: x["timestamp"] or 0, reverse=True)
+        history_list = history_list[:5]
+
+        # 4. Format timestamp for display
+        for h in history_list:
+            if h["timestamp"]:
+                h["timestamp"] = h["timestamp"].strftime("%Y-%m-%d %H:%M")
+
+    except Exception as e:
+        print(f"Error fetching history: {e}")
+        history_list = []
+
+    # 5. Render with history_list in context
+    return render(request, 'texttofsl.html', {
+        'history_list': history_list
+    })
 
 def logout_view(request):
     if 'uid' in request.session:
@@ -1154,24 +1232,10 @@ def get_sentencehistory(request):
 # ==========================================
 import os
 from django.conf import settings
-from .utils import WordPredictor
 from .predictor import SignPredictor
-
-# 1. SETUP ABSOLUTE PATHS (Fixes "File not found" on Render)
-WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'model.tflite')
 
 # 2. GLOBAL INITIALIZATION (Runs ONCE when server starts)
 print("⏳ Initializing AI Models...")
-
-# --- Load Word Predictor ---
-try:
-    print(f"   Loading WordPredictor from: {WORD_MODEL_PATH}")
-    # Load the model once here. We pass the absolute path to be safe.
-    word_predictor = WordPredictor(model_path=WORD_MODEL_PATH)
-    print("   ✅ WordPredictor loaded.")
-except Exception as e:
-    print(f"   ❌ WordPredictor Failed: {e}")
-    word_predictor = None
 
 # --- Load Sign Predictor ---
 try:
@@ -1185,7 +1249,7 @@ except Exception as e:
 
 # 3. VIEWS USING GLOBAL VARIABLES
 
-def sign(request):
+def fsl(request):
     return render(request, 'fsltotext.html')
 
 @csrf_exempt
@@ -1231,9 +1295,48 @@ def apply_suggestion(request):
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
 
+# views.py
+from firebase_admin import firestore
+
 @firebase_login_required
 def detection_page(request):
-    return render(request, 'predict.html')
+    user_id = request.session.get("uid")
+    history_list = []
+
+    try:
+        if user_id:
+            # Fetch history specifically for "words" (ASL Word Detection)
+            docs = db.collection("translations") \
+                     .where("user_id", "==", user_id) \
+                     .where("type", "==", "words") \
+                     .order_by("timestamp", direction=firestore.Query.DESCENDING) \
+                     .limit(10) \
+                     .stream()
+
+            for doc in docs:
+                data = doc.to_dict()
+                
+                # Format timestamp safely
+                ts = data.get("timestamp")
+                formatted_time = "--:--"
+                if ts:
+                    try:
+                        # Try Python datetime format
+                        formatted_time = ts.strftime("%I:%M %p") # e.g., 02:30 PM
+                    except:
+                        formatted_time = str(ts)
+
+                history_list.append({
+                    "text": data.get("text", ""),
+                    "timestamp": formatted_time
+                })
+
+    except Exception as e:
+        print(f"Error fetching prediction history: {e}")
+
+    return render(request, 'predict.html', {
+        'history_list': history_list
+    })
 
 @csrf_exempt
 def translate_phrase(request):
@@ -1257,34 +1360,6 @@ def translate_phrase(request):
 def release_camera(request):
     # Camera is handled by frontend now, this is just a placeholder
     return JsonResponse({'status': 'camera_released'})
-
-@csrf_exempt
-def get_prediction(request):
-    """
-    View for Word/Sentence Prediction
-    """
-    global word_predictor # Use the global instance
-
-    if word_predictor is None:
-        return JsonResponse({'prediction': 'Error', 'accuracy': 'Model Failed'}, status=500)
-
-    # 1. Handle Image Upload (POST)
-    if request.method == "POST":
-        image_data = request.POST.get('image')
-        if image_data:
-            data = word_predictor.process_web_frame(image_data)
-            return JsonResponse(data)
-
-    # 2. Handle Status Check (GET)
-    return JsonResponse(word_predictor.get_status())
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def reset_prediction(request):
-    global word_predictor
-    if word_predictor:
-        word_predictor.reset()
-    return JsonResponse({'status': 'reset'})
 
 # views.py
 import requests
@@ -1683,3 +1758,127 @@ def stream_video_view(request, file_id):
 
     response["Accept-Ranges"] = "bytes"
     return response
+
+# views.py imports
+# views.py
+import os
+import json
+import numpy as np  # <--- THIS IS THE MISSING LINE THAT CAUSED THE ERROR
+import requests
+import base64
+from datetime import datetime
+from functools import wraps
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.conf import settings
+
+import firebase_admin
+from firebase_admin import credentials, firestore, auth
+
+from .utils import WordPredictor
+
+# ==========================================
+# MODEL INITIALIZATION
+# ==========================================
+
+print("⏳ Initializing Word Prediction Model...")
+
+# 1. Define Paths
+WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'my_model.h5')
+DATA_PATH = os.path.join(settings.BASE_DIR, 'data') # Path to your folders
+
+# 2. Load Labels (Actions) automatically from the Data folder
+try:
+    if os.path.exists(DATA_PATH):
+        print(f"   📂 Data folder found. Loading labels from: {DATA_PATH}")
+        # This copies the logic from RealTime.py: actions = np.array(os.listdir(PATH))
+        ACTIONS = np.array(os.listdir(DATA_PATH))
+    else:
+        print("   ⚠️ 'data' folder not found. Using hardcoded labels.")
+        # Fallback list if folder is missing
+        ACTIONS = np.array(['hello', 'iloveyou', 'yes', 'no', 'help', 'sorry', 'please', 'thankyou', 
+                    'goodbye', 'imissyou', 'good morning', 'good afternoon', ]) 
+
+    print(f"   ✅ Actions loaded: {ACTIONS}")
+
+except Exception as e:
+    print(f"   ❌ Error loading actions: {e}")
+    ACTIONS = np.array([])
+
+# 3. Load the Predictor
+try:
+    if os.path.exists(WORD_MODEL_PATH):
+        word_predictor = WordPredictor(model_path=WORD_MODEL_PATH, actions_list=ACTIONS)
+        print("   ✅ WordPredictor loaded successfully.")
+    else:
+        print(f"   ❌ Model file not found at: {WORD_MODEL_PATH}")
+        word_predictor = None
+except Exception as e:
+    print(f"   ❌ WordPredictor Failed to load: {e}")
+    word_predictor = None
+
+# ==========================================
+# VIEWS
+# ==========================================
+
+@csrf_exempt
+@require_POST
+def get_prediction(request):
+    """
+    Receives base64 image -> Utils.WordPredictor -> Returns JSON
+    """
+    global word_predictor
+
+    if word_predictor is None:
+        return JsonResponse({'status': 'error', 'message': 'Model not loaded'}, status=500)
+
+    try:
+        image_data = request.POST.get('image')
+        if not image_data:
+            return JsonResponse({'status': 'error', 'message': 'No image data'}, status=400)
+
+        # Process via our Utils class
+        result = word_predictor.process_web_frame(image_data)
+        return JsonResponse(result)
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_POST
+def reset_prediction(request):
+    global word_predictor
+    if word_predictor:
+        word_predictor.reset()
+    return JsonResponse({'status': 'success', 'message': 'Reset complete'})
+
+@csrf_exempt
+def save_translation_words(request):
+    """
+    Saves the predicted word to Firestore history.
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            text = data.get("text")
+            
+            # Securely get UID from session
+            user_id = request.session.get("uid")
+
+            if text and user_id:
+                db.collection("translations").add({
+                    "text": text,
+                    "timestamp": datetime.utcnow(),
+                    "user_id": user_id,
+                    "type": "words"
+                })
+                return JsonResponse({"status": "success"})
+            else:
+                return JsonResponse({"status": "error", "message": "Missing text or session"}, status=400)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error"}, status=400)

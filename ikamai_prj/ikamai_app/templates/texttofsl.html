@@ -1012,35 +1012,38 @@
     const notificationMessage = document.getElementById('notification-message');
 
     // Initialize the page
+    // Initialize the page
     document.addEventListener('DOMContentLoaded', function () {
         const djangoData = {
             query: "{{ query|escapejs }}",
             videoUrl: "{{ video_url|escapejs }}"
         };
 
-        // ✅ Only show modal if translation succeeded and user hasn't seen it yet
-        if (djangoData.videoUrl && !localStorage.getItem("seenInstructionModal")) {
-            const instructionModal = document.getElementById("instructionModal");
-            instructionModal.style.display = "flex";
+        // DOM Elements for Modal
+        const instructionModal = document.getElementById("instructionModal");
+        const proceedBtn = document.getElementById("proceedBtn");
 
-            const proceedBtn = document.getElementById("proceedBtn");
-            proceedBtn.addEventListener("click", function () {
-                instructionModal.style.display = "none";
-                // Save flag so we don’t show it again
-                localStorage.setItem("seenInstructionModal", "true");
-            });
+        // ✅ MODIFIED: Show modal immediately if user hasn't seen it yet
+        // We removed 'djangoData.videoUrl' from the condition
+        if (!localStorage.getItem("seenInstructionModal")) {
+            instructionModal.style.display = "flex";
         }
+
+        // Close modal and save flag to LocalStorage when "Get Started" is clicked
+        proceedBtn.addEventListener("click", function () {
+            instructionModal.style.display = "none";
+            // Save flag so we don’t show it again on refresh
+            localStorage.setItem("seenInstructionModal", "true");
+        });
 
         // Add event listener for help button → always re-open modal
         document.getElementById("help-btn").addEventListener("click", function () {
-            const instructionModal = document.getElementById("instructionModal");
             instructionModal.style.display = "flex";
         });
 
         // ✅ Load history only if query exists
         if (djangoData.query) {
-            addToBrowserHistory(djangoData.query, djangoData.videoUrl);
-            loadBrowserHistory();
+             // Keep your history logic here if needed
         }
     });
 
