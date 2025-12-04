@@ -5,9 +5,9 @@ import mediapipe as mp
 import os
 import base64
 import threading
-from tensorflow.keras.models import load_model
+import tensorflow as tf  # Changed: Import TF for TFLite Interpreter
 
-# --- 1. Keypoints Extraction Logic ---
+# --- 1. Keypoints Extraction Logic (UNCHANGED) ---
 
 def draw_landmarks(image, results):
     mp_holistic = mp.solutions.holistic
@@ -44,12 +44,21 @@ def keypoint_extraction(results):
         
     return np.concatenate([lh, rh])
 
-# --- 2. Word Predictor Class (Updated with Stabilization) ---
+# --- 2. Word Predictor Class (Updated for TFLite) ---
 
 class WordPredictor:
     def __init__(self, model_path, actions_list):
-        print(f"Loading Word Model from: {model_path}")
-        self.model = load_model(model_path)
+        print(f"Loading TFLite Word Model from: {model_path}")
+        
+        # --- CHANGED: Load TFLite Interpreter instead of Keras model ---
+        self.interpreter = tf.lite.Interpreter(model_path=model_path)
+        self.interpreter.allocate_tensors()
+        
+        # Get input and output details
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        # ---------------------------------------------------------------
+
         self.actions = np.array(actions_list)
         
         self.holistic = mp.solutions.holistic.Holistic(
@@ -68,10 +77,10 @@ class WordPredictor:
         self.threshold = 0.98
         self.frames_required = 20
         
-        # Stabilization Variables (Matches RealTime.py)
+        # Stabilization Variables
         self.hand_present = False
         self.skip_counter = 0
-        self.SKIP_FRAMES = 2 # Skip first 5 frames of a new gesture
+        self.SKIP_FRAMES = 2 
         
     def process_web_frame(self, base64_image):
         result_data = {
@@ -105,13 +114,11 @@ class WordPredictor:
                 if hand_detected:
                     # --- Stabilization Logic Start ---
                     if not self.hand_present:
-                        # Hand just appeared, start skipping
                         self.hand_present = True
                         self.skip_counter = self.SKIP_FRAMES
                     
                     if self.skip_counter > 0:
                         self.skip_counter -= 1
-                        # Return early while stabilizing
                         return {
                             "status": "stabilizing", 
                             "current_word": self.current_text,
@@ -124,7 +131,21 @@ class WordPredictor:
                     self.sequence.append(keypoints)
                     
                     if len(self.sequence) == self.frames_required:
-                        res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
+                        # --- CHANGED: TFLite Inference Logic ---
+                        
+                        # 1. Prepare input: Expand dims AND ensure float32 (TFLite requirement)
+                        input_data = np.expand_dims(self.sequence, axis=0).astype(np.float32)
+                        
+                        # 2. Set tensor
+                        self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
+                        
+                        # 3. Invoke interpreter
+                        self.interpreter.invoke()
+                        
+                        # 4. Get result
+                        res = self.interpreter.get_tensor(self.output_details[0]['index'])[0]
+                        # ----------------------------------------
+
                         confidence = np.max(res)
                         
                         if confidence >= self.threshold:
@@ -139,7 +160,6 @@ class WordPredictor:
                         self.sequence = [] # Reset after prediction attempt
 
                 else:
-                    # Reset everything if hand is lost
                     self.hand_present = False
                     self.sequence = []
 

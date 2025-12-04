@@ -1788,8 +1788,10 @@ from .utils import WordPredictor
 print("⏳ Initializing Word Prediction Model...")
 
 # 1. Define Paths
-WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'my_model.h5')
-DATA_PATH = os.path.join(settings.BASE_DIR, 'data') # Path to your folders
+# CHANGE THIS LINE: .h5 -> .tflite
+WORD_MODEL_PATH = os.path.join(settings.BASE_DIR, 'my_model.tflite') 
+
+DATA_PATH = os.path.join(settings.BASE_DIR, 'data')
 
 # 2. Load Labels (Actions) automatically from the Data folder
 try:
